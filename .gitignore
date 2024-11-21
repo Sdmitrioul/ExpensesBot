@@ -41,5 +41,5 @@ bin/
 ### Mac OS ###
 .DS_Store
 
-./devops/properties/expnses-bot.dev.properties
+/devops/properties/expnses-bot.dev.properties
 ./logs/
