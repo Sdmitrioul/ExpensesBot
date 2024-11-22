@@ -42,4 +42,5 @@ bin/
 .DS_Store
 
 /devops/properties/expnses-bot.dev.properties
+/requests/notion/http-client.private.env.json
 ./logs/
