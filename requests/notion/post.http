@@ -1,0 +1,55 @@
+### Get database entries
+POST {{host}}/v1/databases/{{database_id}}/query
+Accept: application/json
+Authorization: Bearer {{NOTION_API_KEY}}
+Notion-Version: {{notion-version}}
+Content-Type: application/json
+
+{
+
+}
+
+### Insert entry
+POST {{host}}/v1/pages
+Accept: application/json
+Authorization: Bearer {{NOTION_API_KEY}}
+Notion-Version: {{notion-version}}
+Content-Type: application/json
+
+{
+  "parent": { "database_id": "{{database_id}}" },
+  "properties": {
+    "Amount": {
+       "number": 50
+    },
+    "Tags": {
+      "multi_select": [
+        {
+          "name": "groceries"
+        }
+      ]
+    },
+    "Month": {
+     "select": {
+       "name": "November"
+     }
+    },
+    "Date": {
+      "date": {
+        "start": "2024-11-25",
+        "end": null,
+        "time_zone": null
+      }
+    },
+    "Notes": {
+      "title": [
+        {
+          "text": {
+            "content": "Bla bla",
+            "link": null
+          }
+        }
+      ]
+   }
+  }
+}

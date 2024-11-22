@@ -1,0 +1,11 @@
+### Get database fields
+GET {{host}}/v1/databases/{{database_id}}
+Accept: application/json
+Authorization: Bearer {{NOTION_API_KEY}}
+Notion-Version: {{notion-version}}
+
+###
+GET {{host}}/v1/pages/{{database_id}}
+Accept: application/json
+Authorization: Bearer {{NOTION_API_KEY}}
+Notion-Version: {{notion-version}}
