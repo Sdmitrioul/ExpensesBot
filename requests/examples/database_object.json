@@ -1,0 +1,150 @@
+{
+  "object": "database",
+  "id": "<id>",
+  "cover": null,
+  "icon": {
+    "type": "emoji",
+    "emoji": "💸"
+  },
+  "created_time": "2024-06-25T13:13:00.000Z",
+  "created_by": {
+    "object": "user",
+    "id": "<id>"
+  },
+  "last_edited_by": {
+    "object": "user",
+    "id": "<id>"
+  },
+  "last_edited_time": "2024-11-23T14:41:00.000Z",
+  "title": [
+    {
+      "type": "text",
+      "text": {
+        "content": "Expenses",
+        "link": null
+      },
+      "annotations": {
+        "bold": false,
+        "italic": false,
+        "strikethrough": false,
+        "underline": false,
+        "code": false,
+        "color": "default"
+      },
+      "plain_text": "Expenses",
+      "href": null
+    }
+  ],
+  "description": [
+    {
+      "type": "text",
+      "text": {
+        "content": "\nFill out: tags, month, amount. Optional: date, notes",
+        "link": null
+      },
+      "annotations": {
+        "bold": false,
+        "italic": false,
+        "strikethrough": false,
+        "underline": false,
+        "code": false,
+        "color": "default"
+      },
+      "plain_text": "\nFill out: tags, month, amount. Optional: date, notes",
+      "href": null
+    }
+  ],
+  "is_inline": false,
+  "properties": {
+    "Amount": {
+      "id": "<id>",
+      "name": "Amount",
+      "type": "number",
+      "number": {
+        "format": "euro"
+      }
+    },
+    "Time": {
+      "id": "<id>",
+      "name": "Time",
+      "type": "formula",
+      "formula": {
+        "expression": "if(empty({{notion:block_property:pIae:00000000-0000-0000-0000-000000000000:e1bc33af-761d-4395-a781-67cf8cc82758}}), {{notion:block_property:created_time}}, {{notion:block_property:pIae:00000000-0000-0000-0000-000000000000:e1bc33af-761d-4395-a781-67cf8cc82758}})"
+      }
+    },
+    "Tags": {
+      "id": "<id>",
+      "name": "Tags",
+      "type": "multi_select",
+      "multi_select": {
+        a
+      }
+    },
+    "Month": {
+      "id": "<id>",
+      "name": "Month",
+      "type": "select",
+      "select": {
+        "options": [
+          {
+            "id": "<id>",
+            "name": "August",
+            "color": "gray",
+            "description": null
+          },
+          {
+            "id": "<id>",
+            "name": "July",
+            "color": "red",
+            "description": null
+          },
+          {
+            "id": "<id>",
+            "name": "June",
+            "color": "green",
+            "description": null
+          },
+          {
+            "id": "<id>",
+            "name": "September",
+            "color": "yellow",
+            "description": null
+          },
+          {
+            "id": "<id>",
+            "name": "October",
+            "color": "blue",
+            "description": null
+          },
+          {
+            "id": "<id>",
+            "name": "November",
+            "color": "brown",
+            "description": null
+          }
+        ]
+      }
+    },
+    "Date": {
+      "id": "<id>",
+      "name": "Date",
+      "type": "date",
+      "date": {}
+    },
+    "Notes": {
+      "id": "<id>",
+      "name": "Notes",
+      "type": "title",
+      "title": {}
+    }
+  },
+  "parent": {
+    "type": "workspace",
+    "workspace": true
+  },
+  "url": "https://www.notion.so/2c85d114f6094574876397476cb40cdb",
+  "public_url": null,
+  "archived": false,
+  "in_trash": false,
+  "request_id": "<id>"
+}

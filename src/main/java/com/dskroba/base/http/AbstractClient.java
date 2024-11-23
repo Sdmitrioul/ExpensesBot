@@ -1,14 +1,12 @@
 package com.dskroba.base.http;
 
 import com.dskroba.base.bean.AbstractBean;
-import com.dskroba.base.exception.CustomException;
 import com.dskroba.base.limiter.RateLimiter;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -16,7 +14,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.function.Function;
 
-public class AbstractClient extends AbstractBean {
+public class AbstractClient extends AbstractBean implements Client {
     private static final Duration CONNECTION_TIMEOUT = Duration.ofSeconds(30);
     private static final Duration READ_TIMEOUT = Duration.ofSeconds(60);
 
@@ -29,7 +27,7 @@ public class AbstractClient extends AbstractBean {
         this.rateLimiter = rateLimiter;
     }
 
-    protected <T> T loadWebResource(
+    public <T> T loadWebResource(
             URI uri,
             String[] headers,
             String httpMethod,
@@ -88,15 +86,6 @@ public class AbstractClient extends AbstractBean {
                     }
                 }
             }
-        }
-    }
-
-    protected URI buildUri(String basePath, String additional) {
-        try {
-            return new URI(basePath).resolve(additional);
-        } catch (URISyntaxException e) {
-            LOGGER.error("Failed to build URI from path: {}", basePath, e);
-            throw new CustomException(e);
         }
     }
 

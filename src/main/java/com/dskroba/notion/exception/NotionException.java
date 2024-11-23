@@ -1,4 +1,4 @@
-package com.dskroba.notion;
+package com.dskroba.notion.exception;
 
 import com.dskroba.base.exception.CustomException;
 

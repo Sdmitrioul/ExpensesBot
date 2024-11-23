@@ -9,10 +9,6 @@ public class NotionHeadersProvider {
         this.version = version;
     }
 
-    public String[] getGetHeader() {
-        return getHeader();
-    }
-
     public String[] getPostHeader() {
         return getHeader("Content-Type", "application/json");
     }

@@ -6,7 +6,32 @@ Notion-Version: {{notion-version}}
 Content-Type: application/json
 
 {
-
+  "filter": {
+    "and": [
+      {
+        "property": "Time",
+        "formula": {
+          "date":{
+            "on_or_after": "2024-11-01"
+          }
+        }
+      },
+      {
+        "property": "Time",
+        "formula": {
+          "date":{
+            "on_or_before": "2024-12-01"
+          }
+        }
+      }
+    ]
+  },
+  "sorts": [
+    {
+      "property": "Time",
+      "direction": "descending"
+    }
+  ]
 }
 
 ### Insert entry
