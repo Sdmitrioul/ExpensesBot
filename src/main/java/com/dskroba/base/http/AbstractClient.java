@@ -1,9 +1,8 @@
 package com.dskroba.base.http;
 
-import com.dskroba.base.exception.CustomException;
-import com.dskroba.base.RateLimiter;
 import com.dskroba.base.bean.AbstractBean;
-import org.jetbrains.annotations.Nullable;
+import com.dskroba.base.exception.CustomException;
+import com.dskroba.base.limiter.RateLimiter;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -30,8 +29,7 @@ public class AbstractClient extends AbstractBean {
         this.rateLimiter = rateLimiter;
     }
 
-    @Nullable
-    protected  <T> T loadWebResource(
+    protected <T> T loadWebResource(
             URI uri,
             String[] headers,
             String httpMethod,

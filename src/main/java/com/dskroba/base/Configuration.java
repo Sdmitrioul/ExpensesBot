@@ -2,7 +2,6 @@ package com.dskroba.base;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -18,7 +17,6 @@ public final class Configuration {
     private static final String DEFAULT_CONFIG_FILE_PROP = "instance.conf";
     private static volatile Properties globalProperties;
 
-    @NotNull
     public static Properties getGlobalProperties() {
         if (globalProperties == null) {
             synchronized (Configuration.class) {
@@ -30,7 +28,6 @@ public final class Configuration {
         return globalProperties;
     }
 
-    @NotNull
     private static Properties readProperties() {
         String path = System.getProperty(DEFAULT_CONFIG_FILE_PROP);
         LOGGER.info("Read properties from files (-D" + DEFAULT_CONFIG_FILE_PROP + "={}).", path);
@@ -43,7 +40,7 @@ public final class Configuration {
     }
 
 
-    private static Properties getPropertiesFromPaths(@NotNull String allPaths) {
+    private static Properties getPropertiesFromPaths(String allPaths) {
         String[] paths = allPaths.split(";");
 
         Map<String, Object> propertyMap = new HashMap<>();
@@ -62,9 +59,9 @@ public final class Configuration {
         return new Properties(propertyMap);
     }
 
-    private static void parseLines(@NotNull BufferedReader reader,
-                                   @NotNull Map<String, Object> propertyMap,
-                                   @NotNull String path) throws IOException {
+    private static void parseLines(BufferedReader reader,
+                                   Map<String, Object> propertyMap,
+                                   String path) throws IOException {
         String line;
         int lineNumber = 0;
         while ((line = reader.readLine()) != null) {

@@ -60,7 +60,8 @@ public class Properties {
         NOTION_API_TOKEN("notion.token", true),
         NOTION_DATABASE_ID("notion.database.id", true),
         NOTION_API_VERSION("notion.api.version", true),
-        NOTION_DATABASE_URL("notion.database.url", true),;
+        NOTION_DATABASE_URL("notion.database.url", true),
+        ;
 
         private static final Map<String, Property> NAME_TO_PROPERTY;
 

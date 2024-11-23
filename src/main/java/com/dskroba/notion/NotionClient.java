@@ -1,6 +1,6 @@
 package com.dskroba.notion;
 
-import com.dskroba.base.RateLimiter;
+import com.dskroba.base.limiter.RateLimiter;
 import com.dskroba.base.http.AbstractClient;
 
 import java.io.Reader;
