@@ -13,7 +13,8 @@ import java.io.Reader;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
-import java.util.ArrayList;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -22,7 +23,8 @@ import java.util.stream.Collectors;
 public final class DatabaseUtil {
     private static final Logger LOGGER = LogManager.getLogger(DatabaseUtil.class);
     public static final SimpleDateFormat DATE_TIME_FORMATTER = new SimpleDateFormat("yyyy-MM-dd");
-
+    public static final DateTimeFormatter INSTANT_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+            .withZone(ZoneId.systemDefault());
 
     public static String wrapExpense(Expense expense, String databaseId) {
         String tags = expense.getTag()
@@ -36,7 +38,7 @@ public final class DatabaseUtil {
                 .append("\"Amount\":{\"number\":").append(expense.getAmount()).append("},")
                 .append("\"Tags\":{\"multi_select\":[").append(tags).append("]},")
                 .append("\"Month\":{\"select\":{\"name\":\"").append(expense.getMonth()).append("\"}},")
-                .append("\"Date\":{\"date\":{\"start\":\"").append(expense.getDate())
+                .append("\"Date\":{\"date\":{\"start\":\"").append(DATE_TIME_FORMATTER.format(expense.getDate()))
                 .append("\",\"end\":null,\"time_zone\":null}},")
                 .append("\"Notes\":{\"title\":[{\"text\":{\"content\":\"")
                 .append(expense.getNote()).append("\",\"link\":null}}]}")
@@ -48,11 +50,11 @@ public final class DatabaseUtil {
                 .append("\"filter\":{")
                 .append("\"and\":[").append("{").append("\"property\":\"Time\",").append("\"formula\":{")
                 .append("\"date\":{")
-                .append("\"on_or_after\":\"").append(DATE_TIME_FORMATTER.format(timeInterval.first())).append("\"")
+                .append("\"on_or_after\":\"").append(INSTANT_TIME_FORMATTER.format(timeInterval.first())).append("\"")
                 .append("}").append("}").append("},")
                 .append("{")
                 .append("\"property\":\"Time\",").append("\"formula\":{").append("\"date\":{")
-                .append("\"before\":\"").append(DATE_TIME_FORMATTER.format(timeInterval.second())).append("\"")
+                .append("\"before\":\"").append(INSTANT_TIME_FORMATTER.format(timeInterval.second())).append("\"")
                 .append("}").append("}").append("}").append("]").append("},")
                 .append("\"sorts\":[").append("{")
                 .append("\"property\":\"Time\",").append("\"direction\":\"descending\"")
@@ -62,7 +64,6 @@ public final class DatabaseUtil {
 
     public static List<Expense> parseExpenses(Reader reader) {
         JsonObject response = JsonParser.parseReader(reader).getAsJsonObject();
-        List<Expense> expenses = new ArrayList<>();
         return response.get("results").getAsJsonArray().asList()
                 .stream()
                 .map(expense -> parseExpense(expense.getAsJsonObject()))

@@ -12,11 +12,12 @@ import java.time.Duration;
 
 import static com.dskroba.base.Properties.Property.*;
 
-public final class NotionContext {
+public final class NotionContext implements AutoCloseable {
     private final Clock clock;
     private final NotionPropertyProvider propertyProvider;
     private NotionFacade facade;
     private RateLimiter rateLimiter;
+    private Client client;
 
     public NotionContext(Clock clock) {
         this.clock = clock;
@@ -47,7 +48,12 @@ public final class NotionContext {
     }
 
     private Client getClient() {
-        return new AbstractClient(getRateLimiter());
+        if (client == null) {
+            AbstractClient client = new AbstractClient(getRateLimiter());
+            client.start();
+            this.client = client;
+        }
+        return this.client;
     }
 
     private synchronized RateLimiter getRateLimiter() {
@@ -61,5 +67,12 @@ public final class NotionContext {
                 Integer.parseInt(properties.get(NOTION_RATE_LIMIT_THRESHOLD)),
                 Integer.parseInt(properties.get(NOTION_RATE_LIMIT_RETRY)));
         return rateLimiter;
+    }
+
+    @Override
+    public void close() throws Exception {
+        if (client != null) {
+            client.close();
+        }
     }
 }

@@ -5,7 +5,7 @@ import java.net.URI;
 import java.net.http.HttpRequest;
 import java.util.function.Function;
 
-public interface Client {
+public interface Client extends AutoCloseable {
     <T> T loadWebResource(
             URI uri,
             String[] headers,

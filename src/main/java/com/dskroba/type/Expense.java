@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
-import static com.dskroba.notion.DatabaseUtil.DATE_TIME_FORMATTER;
+import static com.dskroba.notion.DatabaseUtil.INSTANT_TIME_FORMATTER;
 
 public class Expense {
     private final int amount;
@@ -55,7 +55,7 @@ public class Expense {
     public String toString() {
         return "Expense{\n" +
                 "\tamount=" + amount + ",\n" +
-                "\tdate=" + DATE_TIME_FORMATTER.format(date.toInstant()) + ",\n" +
+                "\tdate=" + INSTANT_TIME_FORMATTER.format(date.toInstant()) + ",\n" +
                 "\tdescription='" + description + '\'' + ",\n" +
                 "\texpenseTags=" + expenseTags
                 .stream()

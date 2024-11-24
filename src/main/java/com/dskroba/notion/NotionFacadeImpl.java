@@ -17,8 +17,7 @@ public class NotionFacadeImpl implements NotionFacade {
     private final NotionPropertyProvider propertyProvider;
     private final NotionHeadersProvider headersProvider;
 
-
-    public NotionFacadeImpl(Client client, NotionPropertyProvider propertyProvider, NotionHeadersProvider headersProvider) {
+    NotionFacadeImpl(Client client, NotionPropertyProvider propertyProvider, NotionHeadersProvider headersProvider) {
         this.client = client;
         this.propertyProvider = propertyProvider;
         this.headersProvider = headersProvider;

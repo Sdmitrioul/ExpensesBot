@@ -30,7 +30,7 @@ public class NotionPropertyProvider {
     }
 
     public int getRetryCount() {
-        return 0;
+        return 1;
     }
 
     public long getRetryDelay() {
