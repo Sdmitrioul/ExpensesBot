@@ -1,38 +1,5 @@
-### Get database fields
+### Get database fields (useless)
 GET {{host}}/v1/databases/{{database_id}}
 Accept: application/json
 Authorization: Bearer {{NOTION_API_KEY}}
 Notion-Version: {{notion-version}}
-
-###
-GET {{host}}/v1/pages/{{database_id}}
-Accept: application/json
-Authorization: Bearer {{NOTION_API_KEY}}
-Notion-Version: {{notion-version}}
-
-{
-  "and": [
-    {
-      "property": "Time",
-      "formula": {
-        "date":{
-          "after": "2024-11-00"
-        }
-      }
-    },
-    {
-      "property": "Time",
-      "formula": {
-        "date":{
-          "before": "2024-12-00"
-        }
-      }
-    }
-  ],
-  "sorts": [
-    {
-      "property": "Time",
-      "direction": "descending"
-    }
-  ]
-}

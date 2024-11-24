@@ -20,7 +20,7 @@ Content-Type: application/json
         "property": "Time",
         "formula": {
           "date":{
-            "on_or_before": "2024-12-01"
+            "before": "2024-11-05"
           }
         }
       }
