@@ -43,4 +43,5 @@ bin/
 
 /devops/properties/*.dev.properties
 /requests/notion/http-client.private.env.json
+/logs/**
 ./logs/
