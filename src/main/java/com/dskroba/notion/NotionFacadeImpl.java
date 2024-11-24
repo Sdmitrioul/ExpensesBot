@@ -1,10 +1,12 @@
 package com.dskroba.notion;
 
 import com.dskroba.base.http.Client;
+import com.dskroba.base.type.Pair;
 import com.dskroba.type.Expense;
 
 import java.net.http.HttpRequest;
-import java.util.Date;
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -37,7 +39,17 @@ public class NotionFacadeImpl implements NotionFacade {
     }
 
     @Override
-    public List<Expense> getExpenses(Date from, Date to) {
-        return List.of();
+    public List<Expense> getExpenses(Pair<Instant, Instant> timeInterval) {
+        return Optional.ofNullable(client.loadWebResource(
+                buildUri(propertyProvider.getNotionUrl(),
+                        "/v1/databases/" + propertyProvider.getDatabaseId() + "/query"),
+                headersProvider.getPostHeader(),
+                "POST",
+                HttpRequest.BodyPublishers
+                        .ofString(DatabaseUtil.wrapTimeInterval(timeInterval)),
+                DatabaseUtil::parseExpenses,
+                propertyProvider.getRetryCount(),
+                propertyProvider.getRetryDelay()
+        )).orElse(new ArrayList<>());
     }
 }
