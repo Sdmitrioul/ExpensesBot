@@ -43,7 +43,7 @@ public final class Configuration {
     private static Properties getPropertiesFromPaths(String allPaths) {
         String[] paths = allPaths.split(";");
 
-        Map<String, Object> propertyMap = new HashMap<>();
+        Map<String, String> propertyMap = new HashMap<>();
         for (String path : paths) {
             try (BufferedReader reader = Files.newBufferedReader(Paths.get(path))) {
                 parseLines(reader, propertyMap, path);
@@ -60,7 +60,7 @@ public final class Configuration {
     }
 
     private static void parseLines(BufferedReader reader,
-                                   Map<String, Object> propertyMap,
+                                   Map<String, String> propertyMap,
                                    String path) throws IOException {
         String line;
         int lineNumber = 0;

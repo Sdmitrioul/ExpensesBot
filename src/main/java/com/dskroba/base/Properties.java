@@ -1,28 +1,22 @@
 package com.dskroba.base;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 public class Properties {
-    private static final Logger LOGGER = LogManager.getLogger(Properties.class);
+    private final Map<String, String> properties;
 
-    private final Map<String, Object> properties;
-
-    public Properties(Map<String, Object> properties) {
+    public Properties(Map<String, String> properties) {
         validateProperties(properties);
         this.properties = properties;
     }
 
-    private void validateProperties(Map<String, Object> properties) {
+    private void validateProperties(Map<String, String> properties) {
         if (properties == null) {
             throw new IllegalArgumentException("Properties cannot be null");
         }
-
-        boolean containsAllRequiredProps = Arrays.stream(Property.values())
+        /*boolean containsAllRequiredProps = Arrays.stream(Property.values())
                 .filter(property -> property.required)
                 .map(property -> property.name)
                 .map(propertyName -> {
@@ -35,22 +29,22 @@ public class Properties {
                 .reduce(true, Boolean::logicalAnd);
         if (!containsAllRequiredProps) {
             throw new IllegalArgumentException("Required properties are missing");
-        }
+        }*/
     }
 
-    public Object get(Property property) {
+    public String get(Property property) {
         return getOrDefault(property, null);
     }
 
-    public Object get(String property) {
+    public String get(String property) {
         return getOrDefault(property, null);
     }
 
-    public Object getOrDefault(Property property, Object defaultValue) {
+    public String getOrDefault(Property property, String defaultValue) {
         return getOrDefault(property.name, defaultValue);
     }
 
-    public Object getOrDefault(String property, Object defaultValue) {
+    public String getOrDefault(String property, String defaultValue) {
         return properties.getOrDefault(property, defaultValue);
     }
 
@@ -61,7 +55,9 @@ public class Properties {
         NOTION_DATABASE_ID("notion.database.id", true),
         NOTION_API_VERSION("notion.api.version", true),
         NOTION_DATABASE_URL("notion.database.url", true),
-        ;
+        NOTION_RATE_LIMIT_DURATION("notion.rate.limit.duration", true),
+        NOTION_RATE_LIMIT_THRESHOLD("notion.rate.limit.threshold", true),
+        NOTION_RATE_LIMIT_RETRY("notion.rate.limit.retry", true);
 
         private static final Map<String, Property> NAME_TO_PROPERTY;
 
