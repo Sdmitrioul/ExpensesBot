@@ -50,8 +50,6 @@ public class RateLimiterImpl implements RateLimiter {
     private void tryUpdate() {
         Counter counter = counterReference.get();
         long currentTime = clock.millis();
-        LOGGER.error(counter.time + "Counter time");
-        LOGGER.error(currentTime + "Current time");
         if (counter.time + duration.toMillis() <= currentTime) {
             counterReference.compareAndSet(counter, new Counter(currentTime));
         }
