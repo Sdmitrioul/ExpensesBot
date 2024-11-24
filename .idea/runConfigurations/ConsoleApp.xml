@@ -1,0 +1,16 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="ConsoleApp" type="Application" factoryName="Application" nameIsGenerated="true">
+    <option name="MAIN_CLASS_NAME" value="com.dskroba.app.ConsoleApp" />
+    <module name="ExpensesBot.main" />
+    <option name="VM_PARAMETERS" value="-Dinstance.conf=./devops/properties/notion.dev.properties" />
+    <extension name="coverage">
+      <pattern>
+        <option name="PATTERN" value="com.dskroba.app.*" />
+        <option name="ENABLED" value="true" />
+      </pattern>
+    </extension>
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
