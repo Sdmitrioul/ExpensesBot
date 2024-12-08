@@ -50,7 +50,9 @@ public class Properties {
 
     public enum Property {
         APPLICATION_NAME("application.name", true),
+        APPLICATION_TIME_ZONE("application.timezone", true),
         TELEGRAM_BOT_TOKEN("telegram.bot.token", true),
+        TELEGRAM_ALLOWED_USERS("telegram.allowed.users", true),
         NOTION_API_TOKEN("notion.token", true),
         NOTION_DATABASE_ID("notion.database.id", true),
         NOTION_API_VERSION("notion.api.version", true),

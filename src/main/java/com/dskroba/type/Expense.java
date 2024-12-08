@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import static com.dskroba.notion.DatabaseUtil.INSTANT_TIME_FORMATTER;
 
 public class Expense {
+    public static final String SHORT_MARKDOWN_HEADER = "| Tag | Amount | description |\n| :---- | :----: | :---- |\n";
     private final int amount;
     private final Date date;
     private final String description;
@@ -49,6 +50,13 @@ public class Expense {
 
     public String getNote() {
         return this.description;
+    }
+
+    public String toShortString(int tagSize, int descriptionSize) {
+        return String.format("| %-" + tagSize + "s | %-8s | %-" + descriptionSize + "s |",
+                expenseTags.isEmpty() ? "" : expenseTags.getFirst(),
+                amount,
+                description);
     }
 
     @Override
