@@ -18,6 +18,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public final class DatabaseUtil {
@@ -41,7 +42,7 @@ public final class DatabaseUtil {
                 .append("\"Date\":{\"date\":{\"start\":\"").append(DATE_TIME_FORMATTER.format(expense.getDate()))
                 .append("\",\"end\":null,\"time_zone\":null}},")
                 .append("\"Notes\":{\"title\":[{\"text\":{\"content\":\"")
-                .append(expense.getNote()).append("\",\"link\":null}}]}")
+                .append(Optional.ofNullable(expense.getNote()).orElse("")).append("\",\"link\":null}}]}")
                 .append("}}").toString();
     }
 
@@ -80,7 +81,7 @@ public final class DatabaseUtil {
             JsonObject properties = expenseObject.get("properties").getAsJsonObject();
             properties.entrySet().forEach(entry -> {
                 if ("Amount".equals(entry.getKey())) {
-                    builder.amount(entry.getValue().getAsJsonObject().get("number").getAsInt());
+                    builder.amount(entry.getValue().getAsJsonObject().get("number").getAsDouble());
                 } else if ("Time".equals(entry.getKey())) {
                     try {
                         builder.date(DATE_TIME_FORMATTER.parse(entry.getValue().getAsJsonObject()

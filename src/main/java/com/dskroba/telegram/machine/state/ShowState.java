@@ -1,25 +1,24 @@
 package com.dskroba.telegram.machine.state;
 
-import com.dskroba.notion.NotionFacade;
+import com.dskroba.base.TablePrinter;
 import com.dskroba.telegram.UserContext;
 import com.dskroba.telegram.machine.Action;
 import com.dskroba.telegram.machine.State;
 import com.dskroba.type.DateFilter;
 import com.dskroba.type.Expense;
-import com.dskroba.type.ExpenseTag;
 import com.pengrad.telegrambot.model.request.ParseMode;
-import com.pengrad.telegrambot.request.SendMessage;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static java.lang.Math.max;
-import static java.util.function.Predicate.not;
+import static com.dskroba.base.TablePrinter.Format.ELIMINATE_EMPTY_COLUMNS;
+import static com.dskroba.type.Expense.AGGREGATED_HEADERS;
+import static com.dskroba.type.Expense.SHORT_HEADERS;
 
 public class ShowState extends AbstractState {
-    ShowState(UserContext userContext, NotionFacade notionFacade) {
-        super("Show state", userContext, notionFacade);
+    ShowState(UserContext userContext) {
+        super("Show state", userContext);
     }
 
     @Override
@@ -50,34 +49,26 @@ public class ShowState extends AbstractState {
         public State execute(State previous) {
             if (previous instanceof ShowState showState) {
                 UserContext userContext = showState.context;
-                List<Expense> expenses = showState.notionFacade
-                        .getExpenses(dateFilter.getTimeIntervals(userContext.getClock()));
-                int maxTagSize = max(expenses.stream()
-                        .map(Expense::getTag)
-                        .filter(not(List::isEmpty))
-                        .map(List::getFirst)
-                        .map(ExpenseTag::name)
-                        .mapToInt(String::length)
-                        .max()
-                        .orElse(3), 3);
-                int descriptionSize = Math.max(expenses.stream()
-                        .map(Expense::getNote)
-                        .mapToInt(String::length)
-                        .max()
-                        .orElse(11), 11);
-                String text = expenses
-                        .stream()
-                        .map(expense -> expense.toShortString(maxTagSize, descriptionSize))
-                        .collect(Collectors.joining("\n",
-                                String.format("<pre>| %-" + maxTagSize + "s | %-8s | %-" + descriptionSize + "s |", "Tag", "Amount", "Description") +
-                                        "\n" +
-                                        "-".repeat(maxTagSize + descriptionSize + 18) +
-                                        "\n",
-                                "</pre>"));
-                SendMessage message = new SendMessage(userContext.getChatId(), text);
-                message.parseMode(ParseMode.HTML);
-                userContext.getExecutorService().execute(() -> userContext.getBot().execute(message));
-                return new ModuleState(userContext, showState.notionFacade);
+                List<Expense> expenses = userContext.getUserExpenses(dateFilter);
+                if (expenses.isEmpty()) {
+                    userContext.makeResponse("Nothing to show");
+                    return new ModuleState(userContext);
+                }
+                String[] headers = this == MONTH_EXPENSES ? AGGREGATED_HEADERS : SHORT_HEADERS;
+                TablePrinter printer = new TablePrinter(ELIMINATE_EMPTY_COLUMNS, headers);
+                if (this != MONTH_EXPENSES) {
+                    expenses.forEach(expense -> printer.addRow(
+                            expense.getFistTagName(""),
+                            String.format("%.2f", expense.getAmount()),
+                            expense.getNote()));
+                } else {
+                    expenses.stream()
+                            .collect(Collectors.toMap(Expense::getFistTag, Expense::getAmount, Double::sum))
+                            .forEach((key, value) -> printer.addRow(key, String.format("%.2f", value)));
+                }
+                String text = "<pre>" + printer.print() + "</pre>";
+                userContext.makeResponse(text, message -> message.parseMode(ParseMode.HTML));
+                return new ModuleState(userContext);
             }
             return previous;
         }

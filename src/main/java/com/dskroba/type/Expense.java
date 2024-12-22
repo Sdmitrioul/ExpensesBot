@@ -11,20 +11,32 @@ import java.util.stream.Collectors;
 import static com.dskroba.notion.DatabaseUtil.INSTANT_TIME_FORMATTER;
 
 public class Expense {
-    public static final String SHORT_MARKDOWN_HEADER = "| Tag | Amount | description |\n| :---- | :----: | :---- |\n";
-    private final int amount;
+    public static final String[] SHORT_HEADERS = new String[]{"Tag", "Amount", "Description"};
+    public static final String[] AGGREGATED_HEADERS = new String[]{"Tag", "Amount"};
+    private final double amount;
     private final Date date;
     private final String description;
     private final List<ExpenseTag> expenseTags;
 
-    public Expense(int amount, Date date, String description, List<ExpenseTag> expenseTags) {
+    public Expense(double amount, Date date, String description, List<ExpenseTag> expenseTags) {
         this.amount = amount;
         this.date = date;
         this.description = description;
         this.expenseTags = expenseTags;
     }
 
-    public int getAmount() {
+    public String getFistTag() {
+        return getFistTagName("Undefined");
+    }
+
+    public String getFistTagName(String defaultValue) {
+        return expenseTags.stream()
+                .findFirst()
+                .map(ExpenseTag::name)
+                .orElse(defaultValue);
+    }
+
+    public double getAmount() {
         return amount;
     }
 
@@ -52,13 +64,6 @@ public class Expense {
         return this.description;
     }
 
-    public String toShortString(int tagSize, int descriptionSize) {
-        return String.format("| %-" + tagSize + "s | %-8s | %-" + descriptionSize + "s |",
-                expenseTags.isEmpty() ? "" : expenseTags.getFirst(),
-                amount,
-                description);
-    }
-
     @Override
     public String toString() {
         return "Expense{\n" +
@@ -73,7 +78,7 @@ public class Expense {
     }
 
     public static class Builder {
-        private int amount;
+        private double amount;
         private Date date;
         private String description;
         private final List<ExpenseTag> expenseTags = new ArrayList<>();
@@ -81,7 +86,7 @@ public class Expense {
         public Builder() {
         }
 
-        public Builder amount(int amount) {
+        public Builder amount(double amount) {
             this.amount = amount;
             return this;
         }

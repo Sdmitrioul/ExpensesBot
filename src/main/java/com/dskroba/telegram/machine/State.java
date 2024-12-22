@@ -8,11 +8,16 @@ public interface State {
 
     State applyAction(Action action);
 
+    void initState();
+
     default Optional<String> message() {
         return Optional.empty();
     }
 
     default Action parseAction(String text) {
-        return getAllowedActions().stream().filter(action -> action.getDescription().equals(text)).findFirst().orElse(null);
+        return getAllowedActions().stream()
+                .filter(action -> action.getDescription().equals(text))
+                .findFirst()
+                .orElse(null);
     }
 }

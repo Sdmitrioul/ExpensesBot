@@ -1,16 +1,15 @@
 package com.dskroba.telegram.machine.state;
 
-import com.dskroba.notion.NotionFacade;
 import com.dskroba.telegram.UserContext;
 import com.dskroba.telegram.machine.Action;
 import com.dskroba.telegram.machine.State;
 
 import java.util.List;
-import java.util.function.BiFunction;
+import java.util.function.Function;
 
 public class ModuleState extends AbstractState {
-    ModuleState(UserContext userContext, NotionFacade notionFacade) {
-        super("module", userContext, notionFacade);
+    ModuleState(UserContext userContext) {
+        super("module", userContext);
     }
 
     @Override
@@ -20,13 +19,13 @@ public class ModuleState extends AbstractState {
 
     public enum ModuleActions implements Action {
         SHOW_EXPENSES(ShowState::new, "Show expenses"),
-        ADD_EXPENSE(AddExpense::new, "Add expense"),
+        ADD_EXPENSE(AddExpenseTagState::new, "Add expense"),
         ;
 
-        private final BiFunction<UserContext, NotionFacade, State> nextState;
+        private final Function<UserContext, State> nextState;
         private final String description;
 
-        ModuleActions(BiFunction<UserContext, NotionFacade, State> nextState, String description) {
+        ModuleActions(Function<UserContext, State> nextState, String description) {
             this.nextState = nextState;
             this.description = description;
         }
@@ -34,7 +33,7 @@ public class ModuleState extends AbstractState {
         @Override
         public State execute(State previous) {
             if (previous instanceof ModuleState moduleState) {
-                return nextState.apply(moduleState.context, moduleState.notionFacade);
+                return nextState.apply(moduleState.context);
             }
             return previous;
         }
