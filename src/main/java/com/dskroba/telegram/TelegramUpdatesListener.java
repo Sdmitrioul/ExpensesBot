@@ -26,10 +26,10 @@ public class TelegramUpdatesListener implements UpdatesListener {
         LOGGER.debug("Processing update {}", update);
         Message message = update.message();
         if (message == null || message.chat() == null) return;
-        LOGGER.info("Update text is {} ", message.text());
+        LOGGER.trace("Update text is {} ", message.text());
         UserContext userContext = context.getUserContext(update);
         if (userContext == null) {
-            LOGGER.info("User can't be verified, update is skipped {}", update);
+            LOGGER.trace("User can't be verified, update is skipped {}", update);
             context.processUpdate(() ->
                     context.sendResponse(message, "We are sorry, bot is not public, you can't use it!"));
             return;

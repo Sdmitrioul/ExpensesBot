@@ -1,3 +1,4 @@
 # ExpensesBot
+docker build -t expense-bot:latest .
 
--VM options -Dinstance.conf=./devops/properties/notion.dev.properties -Dlog4j.configurationFile=logs/log4j2.xml
+docker run -v ./devops/properties/expnses-bot.dev.properties:/config/expenses-bot.properties expense-bot:latest
