@@ -3,15 +3,14 @@ package com.dskroba.base.http;
 import com.dskroba.base.bean.AbstractBean;
 import com.dskroba.base.limiter.RateLimiter;
 
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
+import java.io.*;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.Base64;
 import java.util.function.Function;
 
 public class AbstractClient extends AbstractBean implements Client {
@@ -56,7 +55,7 @@ public class AbstractClient extends AbstractBean implements Client {
                     return contentProcessor.apply(new InputStreamReader(response.body(), StandardCharsets.UTF_8));
                 } else {
                     LOGGER.warn("Unexpected response http status: {}, answer: {}",
-                            response.statusCode(), new String(response.body().readAllBytes()));
+                            response.statusCode(), readAllBytesFromStream(response.body()));
                     return null;
                 }
             } catch (InterruptedException e) {
@@ -71,6 +70,10 @@ public class AbstractClient extends AbstractBean implements Client {
         } else {
             return null;
         }
+    }
+
+    private static String readAllBytesFromStream(InputStream stream) throws IOException {
+        return Base64.getEncoder().encodeToString(new BufferedInputStream(stream).readAllBytes());
     }
 
     private void waitDelay(long retryDelay) {
