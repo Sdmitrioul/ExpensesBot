@@ -1,4 +1,4 @@
-FROM openjdk:21-jdk-slim
+FROM amazoncorretto:21-alpine
 LABEL authors="dskroba"
 WORKDIR /app
 COPY ./build/libs/ExpensesBot-1.0-SNAPSHOT.jar /app
