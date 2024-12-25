@@ -10,7 +10,6 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import java.util.Base64;
 import java.util.function.Function;
 
 public class AbstractClient extends AbstractBean implements Client {
@@ -73,7 +72,7 @@ public class AbstractClient extends AbstractBean implements Client {
     }
 
     private static String readAllBytesFromStream(InputStream stream) throws IOException {
-        return Base64.getEncoder().encodeToString(new BufferedInputStream(stream).readAllBytes());
+        return new String(new BufferedInputStream(stream).readAllBytes());
     }
 
     private void waitDelay(long retryDelay) {
