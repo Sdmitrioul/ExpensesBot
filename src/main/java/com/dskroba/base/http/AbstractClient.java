@@ -56,7 +56,7 @@ public class AbstractClient extends AbstractBean implements Client {
                     return contentProcessor.apply(new InputStreamReader(response.body(), StandardCharsets.UTF_8));
                 } else {
                     LOGGER.warn("Unexpected response http status: {}, answer: {}",
-                            response.statusCode(), response.body());
+                            response.statusCode(), new String(response.body().readAllBytes()));
                     return null;
                 }
             } catch (InterruptedException e) {
