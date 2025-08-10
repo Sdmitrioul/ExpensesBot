@@ -1,37 +1,23 @@
 package com.dskroba.notion;
 
-import com.dskroba.base.Configuration;
-import com.dskroba.base.Properties;
 import com.dskroba.base.http.AbstractClient;
 import com.dskroba.base.http.Client;
 import com.dskroba.base.limiter.RateLimiter;
 import com.dskroba.base.limiter.RateLimiterImpl;
+import com.dskroba.configurations.properties.NotionProperties;
 
 import java.time.Clock;
-import java.time.Duration;
-
-import static com.dskroba.base.Properties.Property.*;
 
 public final class NotionContext implements AutoCloseable {
     private final Clock clock;
-    private final NotionPropertyProvider propertyProvider;
+    private final NotionProperties properties;
     private NotionFacade facade;
     private RateLimiter rateLimiter;
     private Client client;
 
-    public NotionContext(Clock clock) {
+    public NotionContext(Clock clock, NotionProperties properties) {
         this.clock = clock;
-        this.propertyProvider = buildPropertyProvider();
-    }
-
-    private static NotionPropertyProvider buildPropertyProvider() {
-        Properties properties = Configuration.getGlobalProperties();
-        return new NotionPropertyProvider(
-                properties.get(NOTION_DATABASE_URL),
-                properties.get(NOTION_API_TOKEN),
-                properties.get(NOTION_API_VERSION),
-                properties.get(NOTION_DATABASE_ID)
-        );
+        this.properties = properties;
     }
 
     public synchronized NotionFacade getFacade() {
@@ -41,8 +27,8 @@ public final class NotionContext implements AutoCloseable {
 
         NotionFacade facade = new NotionFacadeImpl(
                 getClient(),
-                propertyProvider,
-                new NotionHeadersProvider(propertyProvider.getToken(), propertyProvider.getVersion()));
+                properties,
+                new NotionHeadersProvider(properties.token(), properties.api().version()));
         this.facade = facade;
         return facade;
     }
@@ -60,12 +46,11 @@ public final class NotionContext implements AutoCloseable {
         if (rateLimiter != null) {
             return rateLimiter;
         }
-        Properties properties = Configuration.getGlobalProperties();
         this.rateLimiter = new RateLimiterImpl(
                 clock,
-                Duration.parse(properties.get(NOTION_RATE_LIMIT_DURATION)),
-                Integer.parseInt(properties.get(NOTION_RATE_LIMIT_THRESHOLD)),
-                Integer.parseInt(properties.get(NOTION_RATE_LIMIT_RETRY)));
+                properties.rateLimit().duration(),
+                properties.rateLimit().threshold(),
+                properties.rateLimit().retry());
         return rateLimiter;
     }
 

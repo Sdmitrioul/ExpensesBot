@@ -81,6 +81,6 @@ public class TablePrinter {
     }
 
     public enum Format {
-        FULL, ELIMINATE_EMPTY_COLUMNS;
+        FULL, ELIMINATE_EMPTY_COLUMNS
     }
 }

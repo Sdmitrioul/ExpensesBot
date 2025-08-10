@@ -31,19 +31,17 @@ public class TelegramContext implements AutoCloseable {
     private final NotionFacade notion;
     private final Clock clock;
     private final Set<String> allowedUsers;
-    private final Object lock;
 
     public TelegramContext(ExecutorService executors,
                            String telegramToken,
                            NotionFacade notion,
                            Clock clock,
-                           Set<String> allowedUsers, Object lock) {
+                           Set<String> allowedUsers) {
         this.executors = executors;
         this.telegramBot = new TelegramBot(telegramToken);
         this.notion = notion;
         this.clock = clock;
         this.allowedUsers = allowedUsers;
-        this.lock = lock;
     }
 
     public void setListeners(TelegramUpdatesListener telegramUpdatesListener,
@@ -88,9 +86,6 @@ public class TelegramContext implements AutoCloseable {
         clearUserStates();
         telegramBot.shutdown();
         shutdownExecutorService(executors);
-        synchronized (lock) {
-            lock.notify();
-        }
     }
 
     private void clearUserStates() {

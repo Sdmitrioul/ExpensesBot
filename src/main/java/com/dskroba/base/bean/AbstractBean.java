@@ -1,5 +1,7 @@
 package com.dskroba.base.bean;
 
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -7,6 +9,7 @@ public abstract class AbstractBean implements Bean {
     protected final Logger LOGGER = LogManager.getLogger(getClass());
     private volatile boolean isRunning;
 
+    @PostConstruct
     @Override
     public final synchronized void start() {
         if (isRunning) {
@@ -14,24 +17,25 @@ public abstract class AbstractBean implements Bean {
             return;
         }
 
-        LOGGER.info("Starting ...");
+        LOGGER.info("Starting {}", this.getClass().getSimpleName());
         startImpl();
         isRunning = true;
-        LOGGER.info("Started!");
+        LOGGER.info("{} started!", this.getClass().getSimpleName());
     }
 
+    @PreDestroy
     @Override
     public final synchronized void stop() {
         if (!isRunning) {
             return;
         }
         isRunning = false;
-        LOGGER.info("Stopping ...");
+        LOGGER.info("Stopping {}", this.getClass().getSimpleName());
         stopImpl();
-        LOGGER.info("Stopped!");
+        LOGGER.info("{} stopped!", this.getClass().getSimpleName());
     }
 
-    public boolean isRunning() {
+    public final boolean isRunning() {
         return isRunning;
     }
 
@@ -39,5 +43,9 @@ public abstract class AbstractBean implements Bean {
     }
 
     public void stopImpl() {
+    }
+
+    public void close() {
+        stop();
     }
 }

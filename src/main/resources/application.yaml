@@ -1,0 +1,30 @@
+telegram:
+  bot:
+    enabled: ${TELEGRAM_BOT_ENABLED:true}
+    token: ${TELEGRAM_BOT_TOKEN}
+    allowed-users: ${TELEGRAM_ALLOWED_USERS}
+    threads-count: ${TELEGRAM_THREADS_COUNT:2}
+
+application:
+  time-zone: ${APPLICATION_TIME_ZONE:UTC}
+  console:
+    enabled: ${CONSOLE_ENABLED:false}
+
+notion:
+  enabled: ${NOTION_ENABLED:false}
+  token: ${NOTION_TOKEN}
+  database-id: ${NOTION_DATABASE_ID}
+  api:
+    version: ${NOTION_API_VERSION:2022-06-28}
+    url: ${NOTION_API_URL:https://api.notion.com/v1/}
+    retry-delay: ${NOTION_API_RETRY_DELAY:PT1S}
+    retry-count: ${NOTION_API_RETRY_COUNT:3}
+  rate-limit:
+    duration: ${NOTION_RATE_LIMIT_DURATION:PT1S}
+    threshold: ${NOTION_RATE_LIMIT_THRESHOLD:3}
+    retry: ${NOTION_RATE_LIMIT_RETRY:10}
+
+logging:
+  level:
+    com.dskroba: INFO
+    root: INFO
