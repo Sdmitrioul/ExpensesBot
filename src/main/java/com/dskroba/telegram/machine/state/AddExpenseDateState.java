@@ -15,7 +15,7 @@ public class AddExpenseDateState extends ExpenseSavableState {
     public static final String DATE_FORMAT = "dd-MM-yyyy";
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern(DATE_FORMAT);
 
-    public List<Action> actions;
+    public final List<Action> actions;
 
     public AddExpenseDateState(UserContext context, Expense.Builder builder) {
         super("Set custom expense date", context, builder);

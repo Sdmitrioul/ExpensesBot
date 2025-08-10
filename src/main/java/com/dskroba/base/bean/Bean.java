@@ -1,7 +1,8 @@
 package com.dskroba.base.bean;
 
-public interface Bean extends AutoCloseable {
+public interface Bean {
     void start();
+
     void stop();
 
     default void close() {

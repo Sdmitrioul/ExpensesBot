@@ -77,7 +77,6 @@
       "name": "Tags",
       "type": "multi_select",
       "multi_select": {
-        a
       }
     },
     "Month": {

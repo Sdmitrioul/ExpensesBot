@@ -2,6 +2,7 @@ package com.dskroba.notion;
 
 import com.dskroba.base.http.Client;
 import com.dskroba.base.type.Pair;
+import com.dskroba.configurations.properties.NotionProperties;
 import com.dskroba.type.Expense;
 
 import java.net.http.HttpRequest;
@@ -14,41 +15,41 @@ import static com.dskroba.base.Utils.buildUri;
 
 public class NotionFacadeImpl implements NotionFacade {
     private final Client client;
-    private final NotionPropertyProvider propertyProvider;
+    private final NotionProperties propertyProvider;
     private final NotionHeadersProvider headersProvider;
 
-    NotionFacadeImpl(Client client, NotionPropertyProvider propertyProvider, NotionHeadersProvider headersProvider) {
+    NotionFacadeImpl(Client client, NotionProperties notionProperties, NotionHeadersProvider headersProvider) {
         this.client = client;
-        this.propertyProvider = propertyProvider;
+        this.propertyProvider = notionProperties;
         this.headersProvider = headersProvider;
     }
 
     @Override
     public boolean insertExpense(Expense expense) {
         return Optional.ofNullable(client.loadWebResource(
-                buildUri(propertyProvider.getNotionUrl(), "/v1/pages"),
+                buildUri(propertyProvider.api().url(), "/v1/pages"),
                 headersProvider.getPostHeader(),
                 "POST",
                 HttpRequest.BodyPublishers
-                        .ofString(DatabaseUtil.wrapExpense(expense, propertyProvider.getDatabaseId())),
+                        .ofString(DatabaseUtil.wrapExpense(expense, propertyProvider.databaseId())),
                 ignore -> true,
-                propertyProvider.getRetryCount(),
-                propertyProvider.getRetryDelay()
+                propertyProvider.api().retryCount(),
+                propertyProvider.api().retryDelay().toMillis()
         )).orElse(false);
     }
 
     @Override
     public List<Expense> getExpenses(Pair<Instant, Instant> timeInterval) {
         return Optional.ofNullable(client.loadWebResource(
-                buildUri(propertyProvider.getNotionUrl(),
-                        "/v1/databases/" + propertyProvider.getDatabaseId() + "/query"),
+                buildUri(propertyProvider.api().url(),
+                        "/v1/databases/" + propertyProvider.databaseId() + "/query"),
                 headersProvider.getPostHeader(),
                 "POST",
                 HttpRequest.BodyPublishers
                         .ofString(DatabaseUtil.wrapTimeInterval(timeInterval)),
                 DatabaseUtil::parseExpenses,
-                propertyProvider.getRetryCount(),
-                propertyProvider.getRetryDelay()
+                propertyProvider.api().retryCount(),
+                propertyProvider.api().retryDelay().toMillis()
         )).orElse(new ArrayList<>());
     }
 }
