@@ -18,9 +18,12 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-configuration-processor")
     implementation("org.springframework.boot:spring-boot-starter-validation")
 
-    // Your existing dependencies
+    implementation("com.zaxxer:HikariCP:7.0.2")
+    implementation("org.postgresql:postgresql:42.7.7")
+    implementation("org.liquibase:liquibase-core:4.24.0")
     implementation("com.github.pengrad:java-telegram-bot-api:7.11.0")
     implementation("com.google.code.gson:gson:2.11.0")
+    implementation("io.vavr:vavr:0.10.7")
 
     // Testing
     testImplementation("org.springframework.boot:spring-boot-starter-test")

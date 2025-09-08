@@ -1,0 +1,5 @@
+databaseChangeLog:
+  - include:
+      file: classpath:database/changes/create-table-expenses.yaml
+  - include:
+      file: classpath:database/changes/create-table-tgusers.yaml

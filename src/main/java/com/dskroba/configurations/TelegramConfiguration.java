@@ -1,6 +1,7 @@
 package com.dskroba.configurations;
 
 import com.dskroba.configurations.properties.TelegramBotProperties;
+import com.dskroba.repository.ExpenseRepository;
 import com.dskroba.telegram.TelegramContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -36,10 +37,12 @@ public class TelegramConfiguration {
     }
 
     @Bean
-    public TelegramContext telegramContext(@Autowired TelegramBotProperties telegramBotProperties, @Autowired Clock clock) {
+    public TelegramContext telegramContext(@Autowired TelegramBotProperties telegramBotProperties,
+                                           @Autowired ExpenseRepository expenseRepository) {
         ExecutorService executorService = Executors.newFixedThreadPool(telegramBotProperties.threadsCount());
         Set<String> allowedUsers = Arrays.stream(telegramBotProperties.allowedUsers().split(";"))
                 .collect(Collectors.toSet());
-        return new TelegramContext(executorService, telegramBotProperties.token(), null, clock, allowedUsers);
+        return new TelegramContext(executorService, telegramBotProperties.token(),
+                expenseRepository, allowedUsers);
     }
 }

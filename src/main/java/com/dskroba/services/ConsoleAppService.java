@@ -1,11 +1,11 @@
 package com.dskroba.services;
 
 import com.dskroba.base.exception.CustomException;
-import com.dskroba.notion.NotionContext;
-import com.dskroba.notion.NotionFacade;
-import com.dskroba.type.DateFilter;
-import com.dskroba.type.Expense;
-import com.dskroba.type.ExpenseTag;
+import com.dskroba.command.AddExpenseCommand;
+import com.dskroba.command.ConsoleCommand;
+import com.dskroba.command.ImportExpensesCommand;
+import com.dskroba.command.ShowExpensesCommand;
+import com.dskroba.repository.ExpenseRepository;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,8 +14,10 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 import java.time.Clock;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Scanner;
 
 @Service
 @ConditionalOnProperty(
@@ -25,26 +27,17 @@ import java.util.stream.Collectors;
 public class ConsoleAppService implements CommandLineRunner {
     private static final Logger LOGGER = LogManager.getLogger(ConsoleAppService.class);
 
-    private static final String AVAILABLE_TIME_FILTERS = Arrays.stream(DateFilter.values())
-            .map(Enum::name)
-            .collect(Collectors.joining(", ", "{", "}"));
-
-    private static final String AVAILABLE_TAGS = Arrays.stream(ExpenseTag.values())
-            .map(Enum::name)
-            .collect(Collectors.joining(", ", "{", "}"));
-
-    private final Clock clock;
-    private final Optional<NotionContext> notionContext;
+    private final Optional<ExpenseRepository> expenseRepository;
+    private final Map<String, ConsoleCommand> commands = new HashMap<>();
 
     @Autowired
-    public ConsoleAppService(Clock clock, Optional<NotionContext> notionFacade) {
-        this.clock = clock;
-        this.notionContext = notionFacade;
+    public ConsoleAppService(Optional<ExpenseRepository> expenseRepository) {
+        this.expenseRepository = expenseRepository;
     }
 
     @Override
-    public void run(String... args) throws Exception {
-        if (notionContext.isEmpty()) {
+    public void run(String... args) {
+        if (expenseRepository.isEmpty()) {
             LOGGER.error("Console app requires Notion to be enabled. Please set notion.enabled=true");
             System.err.println("Console app requires Notion to be enabled. Please set notion.enabled=true");
             return;
@@ -54,10 +47,22 @@ public class ConsoleAppService implements CommandLineRunner {
         runConsoleInterface();
     }
 
+    private void registerCommands(Scanner scanner) {
+        ExpenseRepository repository = expenseRepository
+                .orElseThrow(() -> new CustomException("Notion context is not available"));
+
+        AddExpenseCommand addCommand = new AddExpenseCommand(scanner, repository);
+        ShowExpensesCommand showCommand = new ShowExpensesCommand(scanner, repository);
+        ImportExpensesCommand importCommand = new ImportExpensesCommand(scanner, repository);
+
+        commands.put(addCommand.getId(), addCommand);
+        commands.put(showCommand.getId(), showCommand);
+        commands.put(importCommand.getId(), importCommand);
+    }
+
     private void runConsoleInterface() {
         try (Scanner scanner = new Scanner(System.in)) {
-            NotionFacade facade = notionContext.get().getFacade();
-
+            registerCommands(scanner);
             while (true) {
                 printMenu();
                 String input = scanner.nextLine();
@@ -68,7 +73,13 @@ public class ConsoleAppService implements CommandLineRunner {
                 }
 
                 try {
-                    handleCommand(input, scanner, facade);
+                    ConsoleCommand command = commands.get(input);
+                    if (command != null) {
+                        command.execute();
+                    } else {
+                        System.out.println("Unknown command: " + input);
+                        System.out.println("Please enter '1', '2', '3', or 'exit'");
+                    }
                 } catch (CustomException e) {
                     System.out.println("Error: " + e.getMessage());
                     LOGGER.warn("Command execution error: {}", e.getMessage());
@@ -88,79 +99,11 @@ public class ConsoleAppService implements CommandLineRunner {
         System.out.println("Expense Tracker Console");
         System.out.println("=".repeat(50));
         System.out.println("Supported commands:");
-        System.out.println("1. Add expense");
-        System.out.println("2. Show expenses");
+        for (var command : commands.values()) {
+            System.out.printf("%s. %s%n", command.getId(), command.getName());
+        }
         System.out.println("Type 'exit' to quit");
         System.out.println("=".repeat(50));
         System.out.print("> ");
-    }
-
-    private void handleCommand(String input, Scanner scanner, NotionFacade facade) {
-        switch (input) {
-            case "1" -> handleAddExpense(scanner, facade);
-            case "2" -> handleShowExpenses(scanner, facade);
-            default -> {
-                System.out.println("Unknown command: " + input);
-                System.out.println("Please enter '1', '2', or 'exit'");
-            }
-        }
-    }
-
-    private void handleAddExpense(Scanner scanner, NotionFacade facade) {
-        System.out.println("\n--- Add New Expense ---");
-
-        System.out.print("Amount: ");
-        int amount = Integer.parseInt(scanner.nextLine());
-
-        System.out.print("Tag " + AVAILABLE_TAGS + ": ");
-        ExpenseTag tag = parseEnum(ExpenseTag.class, scanner.nextLine());
-
-        System.out.print("Note: ");
-        String note = scanner.nextLine();
-
-        Expense expense = new Expense(
-                amount,
-                Date.from(clock.instant()),
-                note,
-                List.of(tag)
-        );
-
-        boolean success = facade.insertExpense(expense);
-        System.out.println("\nResult: " + (success ? "✅ SUCCESS" : "❌ FAILURE"));
-
-        if (success) {
-            LOGGER.info("Expense added successfully: amount={}, tag={}, note={}",
-                    amount, tag, note);
-        } else {
-            LOGGER.warn("Failed to add expense: amount={}, tag={}, note={}",
-                    amount, tag, note);
-        }
-    }
-
-    private void handleShowExpenses(Scanner scanner, NotionFacade facade) {
-        System.out.println("\n--- Show Expenses ---");
-        System.out.println("Available intervals: " + AVAILABLE_TIME_FILTERS);
-        System.out.print("Select interval: ");
-
-        DateFilter dateFilter = parseEnum(DateFilter.class, scanner.nextLine());
-
-        System.out.println("\n--- Expenses for " + dateFilter.name() + " ---");
-        List<Expense> expenses = facade.getExpenses(dateFilter.getTimeIntervals(clock));
-
-        if (expenses.isEmpty()) {
-            System.out.println("No expenses found for the selected period.");
-        } else {
-            expenses.forEach(expense -> System.out.println("💰 " + expense));
-            System.out.println("\nTotal expenses: " + expenses.size());
-        }
-
-        LOGGER.info("Retrieved {} expenses for filter: {}", expenses.size(), dateFilter);
-    }
-
-    private static <T extends Enum<T>> T parseEnum(Class<T> enumClass, String input) {
-        return Arrays.stream(enumClass.getEnumConstants())
-                .filter(constant -> constant.name().equals(input.toUpperCase(Locale.ROOT)))
-                .findFirst()
-                .orElseThrow(() -> new CustomException("Unknown enum value: " + input));
     }
 }

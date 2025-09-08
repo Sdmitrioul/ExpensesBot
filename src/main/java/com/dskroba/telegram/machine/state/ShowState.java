@@ -58,12 +58,12 @@ public class ShowState extends AbstractState {
                 TablePrinter printer = new TablePrinter(ELIMINATE_EMPTY_COLUMNS, headers);
                 if (this != MONTH_EXPENSES) {
                     expenses.forEach(expense -> printer.addRow(
-                            expense.getFistTagName(""),
-                            String.format("%.2f", expense.getAmount()),
+                            expense.getTagName(""),
+                            String.format("%.2f", expense.amount()),
                             expense.getNote()));
                 } else {
                     expenses.stream()
-                            .collect(Collectors.toMap(Expense::getFistTag, Expense::getAmount, Double::sum))
+                            .collect(Collectors.toMap(Expense::getFistTag, Expense::amount, Double::sum))
                             .forEach((key, value) -> printer.addRow(key, String.format("%.2f", value)));
                 }
                 String text = "<pre>" + printer.print() + "</pre>";

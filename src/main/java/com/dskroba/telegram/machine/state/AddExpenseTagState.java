@@ -37,7 +37,7 @@ public class AddExpenseTagState extends ExpenseBuilderState {
         @Override
         public State execute(State previous) {
             if (previous instanceof AddExpenseTagState addExpense) {
-                return new AddExpenseAmountState(addExpense.context, addExpense.expenseBuilder.putTag(tag));
+                return new AddExpenseAmountState(addExpense.context, addExpense.expenseBuilder.setType(tag));
             }
             return previous;
         }

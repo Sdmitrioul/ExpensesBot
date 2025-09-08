@@ -9,6 +9,11 @@ application:
   time-zone: ${APPLICATION_TIME_ZONE:UTC}
   console:
     enabled: ${CONSOLE_ENABLED:false}
+  database:
+    enabled: ${DATABASE_ENABLED:false}
+    url: ${DATABASE_URL}
+    username: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
 
 notion:
   enabled: ${NOTION_ENABLED:false}

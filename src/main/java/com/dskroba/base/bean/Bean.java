@@ -1,6 +1,8 @@
 package com.dskroba.base.bean;
 
-public interface Bean {
+import org.springframework.context.SmartLifecycle;
+
+public interface Bean extends SmartLifecycle {
     void start();
 
     void stop();

@@ -1,5 +1,6 @@
 package com.dskroba.telegram.machine.state;
 
+import com.dskroba.base.ClockProvider;
 import com.dskroba.telegram.UserContext;
 import com.dskroba.telegram.machine.*;
 import com.dskroba.type.Expense;
@@ -37,7 +38,7 @@ public class AddExpenseDateState extends ExpenseSavableState {
     protected Action parseCustomAction(String text) {
         try {
             LocalDate localDate = LocalDate.parse(text, FORMATTER);
-            Date date = Date.from(localDate.atStartOfDay(context.getClock().getZone()).toInstant());
+            Date date = Date.from(localDate.atStartOfDay(ClockProvider.getClock().getZone()).toInstant());
             return new AddExpenseDateAction(expenseBuilder.date(date));
         } catch (DateTimeParseException e) {
             return new TryAgainAction("Incorrect date format");

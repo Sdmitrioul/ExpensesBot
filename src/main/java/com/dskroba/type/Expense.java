@@ -2,50 +2,29 @@ package com.dskroba.type;
 
 import java.time.ZoneId;
 import java.time.format.TextStyle;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.Locale;
-import java.util.stream.Collectors;
 
 import static com.dskroba.notion.DatabaseUtil.INSTANT_TIME_FORMATTER;
 
-public class Expense {
+public record Expense(double amount, Date date, String description, ExpenseTag expenseTag) {
     public static final String[] SHORT_HEADERS = new String[]{"Tag", "Amount", "Description"};
     public static final String[] AGGREGATED_HEADERS = new String[]{"Tag", "Amount"};
-    private final double amount;
-    private final Date date;
-    private final String description;
-    private final List<ExpenseTag> expenseTags;
-
-    public Expense(double amount, Date date, String description, List<ExpenseTag> expenseTags) {
-        this.amount = amount;
-        this.date = date;
-        this.description = description;
-        this.expenseTags = expenseTags;
-    }
 
     public String getFistTag() {
-        return getFistTagName("Undefined");
+        return getTagName("Undefined");
     }
 
-    public String getFistTagName(String defaultValue) {
-        return expenseTags.stream()
-                .findFirst()
-                .map(ExpenseTag::name)
-                .orElse(defaultValue);
+    public String getTagName(String defaultValue) {
+        return expenseTag != null ? expenseTag.name() : defaultValue;
     }
 
-    public double getAmount() {
-        return amount;
-    }
-
-    public List<ExpenseTag> getTag() {
-        return this.expenseTags;
+    public ExpenseTag getTag() {
+        return this.expenseTag;
     }
 
     public String getMonth() {
-        return fromDate(getDate());
+        return fromDate(date());
     }
 
     private String fromDate(Date date) {
@@ -56,10 +35,6 @@ public class Expense {
                 .getDisplayName(TextStyle.FULL, Locale.ENGLISH);
     }
 
-    public Date getDate() {
-        return this.date;
-    }
-
     public String getNote() {
         return this.description;
     }
@@ -68,12 +43,9 @@ public class Expense {
     public String toString() {
         return "Expense{\n" +
                 "\tamount=" + amount + ",\n" +
+                "\texpenseTag=" + getTagName("null") + ",\n" +
                 "\tdate=" + INSTANT_TIME_FORMATTER.format(date.toInstant()) + ",\n" +
                 "\tdescription='" + description + '\'' + ",\n" +
-                "\texpenseTags=" + expenseTags
-                .stream()
-                .map(Enum::toString)
-                .collect(Collectors.joining(",", "[", "]")) + ",\n" +
                 '}';
     }
 
@@ -81,7 +53,7 @@ public class Expense {
         private double amount;
         private Date date;
         private String description;
-        private final List<ExpenseTag> expenseTags = new ArrayList<>();
+        private ExpenseTag type = ExpenseTag.MISCELLANEOUS;
 
         public Builder() {
         }
@@ -101,13 +73,22 @@ public class Expense {
             return this;
         }
 
-        public Builder putTag(ExpenseTag tag) {
-            this.expenseTags.add(tag);
+        public Builder setType(ExpenseTag type) {
+            this.type = type;
+            return this;
+        }
+
+        public Builder setType(String type) {
+            try {
+                this.type = ExpenseTag.valueOf(type);
+            } catch (IllegalArgumentException e) {
+                // ignore
+            }
             return this;
         }
 
         public Expense build() {
-            return new Expense(amount, date, description, expenseTags);
+            return new Expense(amount, date, description, type);
         }
     }
 }

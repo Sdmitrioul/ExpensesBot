@@ -1,22 +1,19 @@
 package com.dskroba.notion;
 
+import com.dskroba.base.ClockProvider;
 import com.dskroba.base.http.AbstractClient;
 import com.dskroba.base.http.Client;
 import com.dskroba.base.limiter.RateLimiter;
 import com.dskroba.base.limiter.RateLimiterImpl;
 import com.dskroba.configurations.properties.NotionProperties;
 
-import java.time.Clock;
-
 public final class NotionContext implements AutoCloseable {
-    private final Clock clock;
     private final NotionProperties properties;
     private NotionFacade facade;
     private RateLimiter rateLimiter;
     private Client client;
 
-    public NotionContext(Clock clock, NotionProperties properties) {
-        this.clock = clock;
+    public NotionContext(NotionProperties properties) {
         this.properties = properties;
     }
 
@@ -47,7 +44,7 @@ public final class NotionContext implements AutoCloseable {
             return rateLimiter;
         }
         this.rateLimiter = new RateLimiterImpl(
-                clock,
+                ClockProvider.getClock(),
                 properties.rateLimit().duration(),
                 properties.rateLimit().threshold(),
                 properties.rateLimit().retry());

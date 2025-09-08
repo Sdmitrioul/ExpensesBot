@@ -1,9 +1,11 @@
 package com.dskroba.telegram;
 
+import com.dskroba.base.ClockProvider;
 import com.dskroba.telegram.machine.Action;
 import com.dskroba.telegram.machine.State;
 import com.dskroba.telegram.machine.TryAgainAction;
 import com.dskroba.telegram.machine.state.StateFactory;
+import com.dskroba.type.AppUser;
 import com.dskroba.type.DateFilter;
 import com.dskroba.type.Expense;
 import com.pengrad.telegrambot.model.Update;
@@ -12,7 +14,6 @@ import com.pengrad.telegrambot.request.SendMessage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.time.Clock;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
@@ -23,16 +24,16 @@ import static java.util.Objects.requireNonNull;
 public class UserContext {
     private final static Logger LOGGER = LogManager.getLogger(UserContext.class);
 
-    private final Clock clock;
     private final Long chatId;
     private final User user;
+    private final AppUser userApp;
     private final TelegramContext context;
     private final AtomicReference<State> state = new AtomicReference<>();
 
-    public UserContext(Long chatId, User user, Clock clock, TelegramContext context) {
+    public UserContext(Long chatId, User user, TelegramContext context) {
         this.chatId = chatId;
         this.user = user;
-        this.clock = clock;
+        this.userApp = new AppUser.Builder().setChatId(chatId).setName(user.username()).build();
         this.context = context;
         this.state.set(StateFactory.getStartState(this));
         initUser();
@@ -41,10 +42,6 @@ public class UserContext {
     private void initUser() {
         state.set(StateFactory.getStartState(this));
         state.get().initState();
-    }
-
-    public Clock getClock() {
-        return clock;
     }
 
     public void executeUpdate(Update update) {
@@ -63,7 +60,7 @@ public class UserContext {
         }
         State newState = current.applyAction(action);
         if (!state.compareAndSet(current, newState)) {
-            LOGGER.error("Can't execute update for user {}, due to state changed during update processing, " +
+            LOGGER.error("Can't execute update for username {}, due to state changed during update processing, " +
                             "prev {}, new expected {}",
                     user.id(), current, newState);
         } else {
@@ -80,11 +77,15 @@ public class UserContext {
     }
 
     public List<Expense> getUserExpenses(DateFilter dateFilter) {
-        return context.getNotion()
-                .getExpenses(dateFilter.getTimeIntervals(getClock()));
+        return context.getExpenseRepository()
+                .getExpenses(dateFilter.getTimeIntervals(ClockProvider.getClock()));
     }
 
     public void saveExpense(Expense expense) {
-        context.processUpdate(() -> context.getNotion().insertExpense(expense));
+        context.processUpdate(() -> context.getExpenseRepository().insertExpense(expense));
+    }
+
+    public AppUser getUserApp() {
+        return userApp;
     }
 }

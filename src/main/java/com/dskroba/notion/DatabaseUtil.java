@@ -28,18 +28,15 @@ public final class DatabaseUtil {
             .withZone(ZoneId.systemDefault());
 
     public static String wrapExpense(Expense expense, String databaseId) {
-        String tags = expense.getTag()
-                .stream()
-                .map(tag -> "{\"name\":\"" + tag + "\"}")
-                .collect(Collectors.joining(","));
+        String tags = expense.getTag().name();
 
         return new StringBuilder().append("{")
                 .append("\"parent\":{\"database_id\":\"").append(databaseId).append("\"},")
                 .append("\"properties\":{")
-                .append("\"Amount\":{\"number\":").append(expense.getAmount()).append("},")
+                .append("\"Amount\":{\"number\":").append(expense.amount()).append("},")
                 .append("\"Tags\":{\"multi_select\":[").append(tags).append("]},")
                 .append("\"Month\":{\"select\":{\"name\":\"").append(expense.getMonth()).append("\"}},")
-                .append("\"Date\":{\"date\":{\"start\":\"").append(DATE_TIME_FORMATTER.format(expense.getDate()))
+                .append("\"Date\":{\"date\":{\"start\":\"").append(DATE_TIME_FORMATTER.format(expense.date()))
                 .append("\",\"end\":null,\"time_zone\":null}},")
                 .append("\"Notes\":{\"title\":[{\"text\":{\"content\":\"")
                 .append(Optional.ofNullable(expense.getNote()).orElse("")).append("\",\"link\":null}}]}")
@@ -119,7 +116,7 @@ public final class DatabaseUtil {
                                 }
                             })
                             .filter(Objects::nonNull)
-                            .forEach(builder::putTag);
+                            .forEach(builder::setType);
                 }
             });
             return builder.build();

@@ -1,12 +1,13 @@
 package com.dskroba.telegram;
 
-import com.dskroba.notion.NotionFacade;
+import com.dskroba.repository.ExpenseRepository;
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.model.Chat;
 import com.pengrad.telegrambot.model.Message;
 import com.pengrad.telegrambot.model.Update;
 import com.pengrad.telegrambot.model.User;
 import com.pengrad.telegrambot.request.SendMessage;
+import com.pengrad.telegrambot.request.SendPhoto;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -28,19 +29,16 @@ public class TelegramContext implements AutoCloseable {
     private final ExecutorService executors;
     private final Map<String, UserContext> users = new ConcurrentHashMap<>();
     private final TelegramBot telegramBot;
-    private final NotionFacade notion;
-    private final Clock clock;
+    private final ExpenseRepository expenseRepository;
     private final Set<String> allowedUsers;
 
     public TelegramContext(ExecutorService executors,
                            String telegramToken,
-                           NotionFacade notion,
-                           Clock clock,
+                           ExpenseRepository repository,
                            Set<String> allowedUsers) {
         this.executors = executors;
         this.telegramBot = new TelegramBot(telegramToken);
-        this.notion = notion;
-        this.clock = clock;
+        this.expenseRepository = repository;
         this.allowedUsers = allowedUsers;
     }
 
@@ -50,8 +48,8 @@ public class TelegramContext implements AutoCloseable {
     }
 
 
-    public NotionFacade getNotion() {
-        return notion;
+    public ExpenseRepository getExpenseRepository() {
+        return expenseRepository;
     }
 
     public UserContext getUserContext(Update update) {
@@ -60,7 +58,11 @@ public class TelegramContext implements AutoCloseable {
                 .map(User::username)
                 .filter(allowedUsers::contains)
                 .map(username -> users.computeIfAbsent(username,
-                        key -> new UserContext(chatId(update), user(update), clock, this)))
+                        key -> {
+                            var userContext = new UserContext(chatId(update), user(update), this);
+                            expenseRepository.addUser(userContext.getUserApp());
+                            return userContext;
+                        }))
                 .orElse(null);
     }
 
@@ -79,6 +81,7 @@ public class TelegramContext implements AutoCloseable {
 
     public void sendResponse(Long chatId, String response, Function<SendMessage, SendMessage> messageTransformer) {
         telegramBot.execute(messageTransformer.apply(new SendMessage(chatId, response)));
+        telegramBot.execute(new SendPhoto(chatId, "Type /help to see available commands"));
     }
 
     @Override

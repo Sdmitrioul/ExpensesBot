@@ -1,0 +1,30 @@
+services:
+  database:
+    container_name: expense-tracker-db
+    image: postgres:17-alpine
+    env_file:
+      - .env-database
+    volumes:
+      - /Users/dskroba/Local/personal/programming/ExpensesBot/data/db:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    networks:
+      - app-network
+
+  spring-application:
+    container_name: expense-tracker-app
+    image: your-app-name:your-tag
+    env_file:
+      - .env-app
+    volumes:
+      - /path/to/your/logs:/app/logs
+    depends_on:
+      - database
+    networks:
+      - app-network
+    profiles:
+      - prod
+
+networks:
+  app-network:
+    driver: bridge

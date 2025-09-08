@@ -32,6 +32,15 @@ public enum DateFilter {
         return new Pair<>(
                 startOfMonth.atStartOfDay(zone).toInstant(),
                 startOfNextMonth.atStartOfDay(zone).toInstant());
+    }),
+    PREVIOUS_MONTH(clock -> {
+        LocalDateTime now = LocalDateTime.now(clock);
+        ZoneId zone = clock.getZone();
+        LocalDate startOfMonth = now.with(TemporalAdjusters.firstDayOfMonth()).minusMonths(1).toLocalDate();
+        LocalDate startOfNextMonth = startOfMonth.plusMonths(1);
+        return new Pair<>(
+                startOfMonth.atStartOfDay(zone).toInstant(),
+                startOfNextMonth.atStartOfDay(zone).toInstant());
     });
 
     private final Function<Clock, Pair<Instant, Instant>> transformer;

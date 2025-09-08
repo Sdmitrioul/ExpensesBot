@@ -1,5 +1,6 @@
 package com.dskroba.configurations;
 
+import com.dskroba.base.ClockProvider;
 import com.dskroba.configurations.properties.ApplicationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -18,7 +19,9 @@ public class ApplicationConfiguration {
         String zoneProperty = applicationProperties.timeZone();
         try {
             ZoneId zoneId = ZoneId.of(zoneProperty);
-            return Clock.system(zoneId);
+            Clock system = Clock.system(zoneId);
+            ClockProvider.setClock(system);
+            return system;
         } catch (ZoneRulesException e) {
             throw new RuntimeException("Unrecognized application time zone " + zoneProperty, e);
         } catch (DateTimeException e) {
