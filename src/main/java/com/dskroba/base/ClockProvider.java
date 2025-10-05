@@ -1,6 +1,7 @@
 package com.dskroba.base;
 
 import java.time.Clock;
+import java.util.Date;
 import java.util.Optional;
 
 public final class ClockProvider {
@@ -9,6 +10,10 @@ public final class ClockProvider {
 
     public static Clock getClock() {
         return Optional.ofNullable(INSTANCE).orElse(INSTANCE_UTC);
+    }
+
+    public static Date getCurrentDate() {
+        return Date.from(getClock().instant());
     }
 
     public synchronized static void setClock(Clock clock) {

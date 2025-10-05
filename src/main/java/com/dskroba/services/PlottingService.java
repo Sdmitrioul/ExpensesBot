@@ -1,9 +1,9 @@
 package com.dskroba.services;
 
 import com.dskroba.base.ClockProvider;
-import com.dskroba.repository.ExpenseRepository;
+import com.dskroba.expenses.ExpenseRepository;
 import com.dskroba.type.DateFilter;
-import com.dskroba.type.Expense;
+import com.dskroba.expenses.Expense;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

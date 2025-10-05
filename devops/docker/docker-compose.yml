@@ -5,7 +5,7 @@ services:
     env_file:
       - .env-database
     volumes:
-      - /Users/dskroba/Local/personal/programming/ExpensesBot/data/db:/var/lib/postgresql/data
+      - postgres-data-expense-tracker-db:/var/lib/postgresql/data
     ports:
       - "5433:5432"
     networks:
@@ -28,3 +28,7 @@ services:
 networks:
   app-network:
     driver: bridge
+
+volumes:
+  postgres-data-expense-tracker-db:
+    external: true

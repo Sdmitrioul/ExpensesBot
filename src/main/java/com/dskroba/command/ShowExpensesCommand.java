@@ -2,9 +2,9 @@ package com.dskroba.command;
 
 import com.dskroba.base.ClockProvider;
 import com.dskroba.base.exception.CustomException;
-import com.dskroba.repository.ExpenseRepository;
+import com.dskroba.expenses.ExpenseRepository;
 import com.dskroba.type.DateFilter;
-import com.dskroba.type.Expense;
+import com.dskroba.expenses.Expense;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

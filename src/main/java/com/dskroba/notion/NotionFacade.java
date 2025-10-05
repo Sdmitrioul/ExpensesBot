@@ -1,6 +1,6 @@
 package com.dskroba.notion;
 
-import com.dskroba.repository.ExpenseRepository;
+import com.dskroba.expenses.ExpenseRepository;
 
 public interface NotionFacade extends ExpenseRepository {
 }

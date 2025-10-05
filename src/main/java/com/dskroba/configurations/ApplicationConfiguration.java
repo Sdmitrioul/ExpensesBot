@@ -1,5 +1,7 @@
 package com.dskroba.configurations;
 
+import com.dskroba.actor.ActorManager;
+import com.dskroba.actor.ActorManagerImpl;
 import com.dskroba.base.ClockProvider;
 import com.dskroba.configurations.properties.ApplicationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -10,6 +12,7 @@ import java.time.Clock;
 import java.time.DateTimeException;
 import java.time.ZoneId;
 import java.time.zone.ZoneRulesException;
+import java.util.List;
 
 @Configuration
 @EnableConfigurationProperties({ApplicationProperties.class})
@@ -29,5 +32,10 @@ public class ApplicationConfiguration {
         } finally {
             System.out.println(System.getProperty("application.console.enabled"));
         }
+    }
+
+    @Bean
+    public ActorManager actorManager() {
+        return new ActorManagerImpl(List.of());
     }
 }

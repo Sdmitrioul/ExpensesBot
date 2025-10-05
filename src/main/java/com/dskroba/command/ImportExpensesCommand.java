@@ -1,8 +1,9 @@
 package com.dskroba.command;
 
-import com.dskroba.repository.ExpenseRepository;
-import com.dskroba.type.Expense;
-import com.dskroba.type.ExpenseTag;
+import com.dskroba.expenses.Expense;
+import com.dskroba.expenses.ExpenseRepository;
+import com.dskroba.expenses.ExpenseTag;
+import com.dskroba.type.Currency;
 import io.vavr.collection.Stream;
 import org.jetbrains.annotations.NotNull;
 
@@ -68,7 +69,7 @@ public class ImportExpensesCommand implements ConsoleCommand {
         if (expenseTag == ExpenseTag.MISCELLANEOUS) {
             System.out.println("Unrecognized tag: " + parts[0] + ". Using default tag: " + expenseTag);
         }
-        return new Expense(amount, date, description, expenseTag);
+        return new Expense(null, amount, -1L, date, description, expenseTag, Currency.EUR);
     }
 
     private static LocalDate parseDate(String dateStr) {

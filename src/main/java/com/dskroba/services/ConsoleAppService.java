@@ -5,7 +5,7 @@ import com.dskroba.command.AddExpenseCommand;
 import com.dskroba.command.ConsoleCommand;
 import com.dskroba.command.ImportExpensesCommand;
 import com.dskroba.command.ShowExpensesCommand;
-import com.dskroba.repository.ExpenseRepository;
+import com.dskroba.expenses.ExpenseRepository;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +13,6 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
-import java.time.Clock;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;

@@ -2,9 +2,10 @@ package com.dskroba.command;
 
 import com.dskroba.base.ClockProvider;
 import com.dskroba.base.exception.CustomException;
-import com.dskroba.repository.ExpenseRepository;
-import com.dskroba.type.Expense;
-import com.dskroba.type.ExpenseTag;
+import com.dskroba.expenses.Expense;
+import com.dskroba.expenses.ExpenseRepository;
+import com.dskroba.expenses.ExpenseTag;
+import com.dskroba.type.Currency;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -53,10 +54,13 @@ public class AddExpenseCommand implements ConsoleCommand {
         String note = scanner.nextLine();
 
         Expense expense = new Expense(
+                null,
                 amount,
+                -1L,
                 Date.from(ClockProvider.getClock().instant()),
                 note,
-                tag
+                tag,
+                Currency.EUR
         );
 
         boolean success = repository.insertExpense(expense);

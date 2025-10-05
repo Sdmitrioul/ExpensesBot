@@ -1,8 +1,10 @@
 package com.dskroba.configurations;
 
 import com.dskroba.configurations.properties.DatabaseProperties;
-import com.dskroba.repository.ExpenseRepository;
-import com.dskroba.repository.ExpenseRepositoryImpl;
+import com.dskroba.principals.PrincipalRepository;
+import com.dskroba.principals.PrincipalRepositoryDAO;
+import com.dskroba.expenses.ExpenseRepository;
+import com.dskroba.expenses.ExpenseRepositoryImpl;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import liquibase.integration.spring.SpringLiquibase;
@@ -42,5 +44,10 @@ public class DatabaseConfiguration {
     @Bean
     public ExpenseRepository expenseRepository(@Autowired DataSource dataSource) {
         return new ExpenseRepositoryImpl(dataSource);
+    }
+
+    @Bean
+    public PrincipalRepository principalRepository(@Autowired DataSource dataSource) {
+        return new PrincipalRepositoryDAO(dataSource);
     }
 }

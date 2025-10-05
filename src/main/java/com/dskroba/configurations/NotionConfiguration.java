@@ -3,6 +3,8 @@ package com.dskroba.configurations;
 import com.dskroba.configurations.properties.NotionProperties;
 import com.dskroba.notion.NotionContext;
 import com.dskroba.notion.NotionFacade;
+import com.dskroba.principals.PrincipalRepository;
+import com.dskroba.principals.PrincipalsRepositoryInMem;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -24,5 +26,10 @@ public class NotionConfiguration {
     @Bean
     public NotionFacade notionContext(@Autowired NotionContext context) {
         return context.getFacade();
+    }
+
+    @Bean
+    public PrincipalRepository principalRepository() {
+        return new PrincipalsRepositoryInMem();
     }
 }

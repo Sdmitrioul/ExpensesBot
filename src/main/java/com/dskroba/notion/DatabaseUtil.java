@@ -2,8 +2,8 @@ package com.dskroba.notion;
 
 import com.dskroba.base.exception.CustomException;
 import com.dskroba.base.type.Pair;
-import com.dskroba.type.Expense;
-import com.dskroba.type.ExpenseTag;
+import com.dskroba.expenses.Expense;
+import com.dskroba.expenses.ExpenseTag;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.apache.logging.log4j.LogManager;
@@ -28,18 +28,18 @@ public final class DatabaseUtil {
             .withZone(ZoneId.systemDefault());
 
     public static String wrapExpense(Expense expense, String databaseId) {
-        String tags = expense.getTag().name();
+        String tags = expense.expenseTag().name();
 
         return new StringBuilder().append("{")
                 .append("\"parent\":{\"database_id\":\"").append(databaseId).append("\"},")
                 .append("\"properties\":{")
                 .append("\"Amount\":{\"number\":").append(expense.amount()).append("},")
                 .append("\"Tags\":{\"multi_select\":[").append(tags).append("]},")
-                .append("\"Month\":{\"select\":{\"name\":\"").append(expense.getMonth()).append("\"}},")
+                .append("\"Month\":{\"select\":{\"name\":\"").append(expense.date()).append("\"}},")
                 .append("\"Date\":{\"date\":{\"start\":\"").append(DATE_TIME_FORMATTER.format(expense.date()))
                 .append("\",\"end\":null,\"time_zone\":null}},")
                 .append("\"Notes\":{\"title\":[{\"text\":{\"content\":\"")
-                .append(Optional.ofNullable(expense.getNote()).orElse("")).append("\",\"link\":null}}]}")
+                .append(Optional.ofNullable(expense.description()).orElse("")).append("\",\"link\":null}}]}")
                 .append("}}").toString();
     }
 
@@ -116,7 +116,7 @@ public final class DatabaseUtil {
                                 }
                             })
                             .filter(Objects::nonNull)
-                            .forEach(builder::setType);
+                            .forEach(builder::type);
                 }
             });
             return builder.build();

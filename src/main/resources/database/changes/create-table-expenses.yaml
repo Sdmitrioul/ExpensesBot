@@ -8,10 +8,15 @@ databaseChangeLog:
             columns:
               - column:
                   name: id
-                  type: int
+                  type: bigint
                   autoIncrement: true
                   constraints:
                     primaryKey: true
+                    nullable: false
+              - column:
+                  name: issuer_id
+                  type: bigint
+                  constraints:
                     nullable: false
               - column:
                   name: amount
@@ -30,6 +35,11 @@ databaseChangeLog:
               - column:
                   name: type
                   type: varchar(32)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: currency
+                  type: varchar(8)
                   constraints:
                     nullable: false
 
