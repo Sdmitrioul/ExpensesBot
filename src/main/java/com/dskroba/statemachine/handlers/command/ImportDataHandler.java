@@ -1,6 +1,7 @@
 package com.dskroba.statemachine.handlers.command;
 
 import com.dskroba.actor.PrincipalContext;
+import com.dskroba.actor.StateContext;
 import com.dskroba.base.csv.CsvParser;
 import com.dskroba.base.csv.IncorrectRowEntry;
 import com.dskroba.base.exception.CustomException;
@@ -29,6 +30,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+
+import static com.dskroba.statemachine.state.CommandStates.MENU;
 
 @Component
 public class ImportDataHandler extends AbstractHandler {
@@ -59,10 +62,12 @@ public class ImportDataHandler extends AbstractHandler {
                     expense -> expenses.add(expense.value()),
                     errors::add);
             List<Effect<?>> effects = new ArrayList<>();
-            effects.add(saveExpenses(expenses));
             if (!errors.isEmpty()) {
                 effects.add(convertErrorEntries(header, errors));
             }
+            effects.add(saveExpenses(expenses));
+            effects.add(MENU.initialEffect());
+            StateContext.PROVIDER.get().setState(MENU);
             return effects;
         } catch (CustomException e) {
             return List.of(new MessageEffect(e.getMessage()), state().initialEffect());
@@ -75,9 +80,9 @@ public class ImportDataHandler extends AbstractHandler {
             output.append("original_row_number,exception_cause,").append(header).append("\n");
             for (IncorrectRowEntry incorrectRowEntry : errors) {
                 output.append(Long.toString(incorrectRowEntry.rowNumber()))
-                        .append(",")
+                        .append(",\"")
                         .append(incorrectRowEntry.causeMessage())
-                        .append(",")
+                        .append("\",")
                         .append(incorrectRowEntry.originalEntry())
                         .append("\n");
             }

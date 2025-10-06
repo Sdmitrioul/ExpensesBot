@@ -13,7 +13,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 public class ExpenseCsvParser extends AbstractCsvParser<Expense.Builder> {
-    private static final List<String> REQUIRED_COLUMNS = List.of("amount", "type", "date", "description");
+    private static final List<String> REQUIRED_COLUMNS = List.of("amount", "tag", "date");
 
     public ExpenseCsvParser(String delimiter) {
         super(delimiter);
@@ -23,7 +23,7 @@ public class ExpenseCsvParser extends AbstractCsvParser<Expense.Builder> {
     protected Either<String, Expense.Builder> parseLine(Map<String, String> entry) {
         return Validation.combine(
                         validateField("amount", entry, ExpenseUtils::parseAmount, "Incorrect amount value"),
-                        validateField("type", entry, ExpenseUtils::parseTag, "Unsupported tag"),
+                        validateField("tag", entry, ExpenseUtils::parseTag, "Unsupported tag"),
                         validateField("date", entry, ExpenseUtils::parseDate, "Invalid date")
                 )
                 .ap((amount, tag, date) -> new Expense.Builder()

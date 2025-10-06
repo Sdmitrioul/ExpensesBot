@@ -28,7 +28,10 @@ public enum DateFilter {
         LocalDate startOfCurrentMonth = startOfPrevMonth.plusMonths(1);
         return createTimeframe(startOfPrevMonth, startOfCurrentMonth, clock.getZone());
     }),
-    ALL_HISTORY(_ -> new Timeframe(Instant.MIN, Instant.MAX));
+    ALL_HISTORY(clock -> {
+        LocalDate today = LocalDate.now(clock);
+        return createTimeframe(today.minus(Period.ofYears(100)), today.plus(Period.ofYears(100)), clock.getZone());
+    });
 
     private final Function<Clock, Timeframe> transformer;
 

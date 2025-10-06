@@ -1,6 +1,5 @@
 package com.dskroba.expenses;
 
-import com.dskroba.FP;
 import com.dskroba.base.formatter.FieldSelector;
 import com.dskroba.base.formatter.extractor.*;
 import com.dskroba.base.formatter.extractor.type.TypeValue;
@@ -10,9 +9,9 @@ import java.util.List;
 
 public enum ExpenseFieldSelectors implements FieldSelector<Expense> {
     ID(LongExtractor.of(Expense::id)),
-    TAG(StringExtractor.of(FP.compose(Expense::expenseTag, Enum::name))),
+    TAG(EnumExtractor.of(Expense::expenseTag)),
     AMOUNT(DoubleExtractor.of(Expense::amount)),
-    CURRENCY(StringExtractor.of(FP.compose(Expense::currency, Enum::name))),
+    CURRENCY(EnumExtractor.of(Expense::currency)),
     DATE(DateExtractor.of(Expense::date)),
     DESCRIPTION(StringExtractor.of(Expense::description)),
     ISSUER(LongExtractor.of(Expense::issuer));

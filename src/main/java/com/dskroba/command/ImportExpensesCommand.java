@@ -48,7 +48,7 @@ public class ImportExpensesCommand implements ConsoleCommand {
         }
         try (var stream = Files.lines(path)) {
             Stream.ofAll(stream.skip(1))
-                    .grouped(500)
+                    .grouped(1000)
                     .forEach(group -> repository.insertExpense(group.map(this::parseLine).asJava()));
         } catch (FileNotFoundException e) {
             System.err.println("File not found: " + filename);
