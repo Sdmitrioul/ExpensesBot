@@ -1,9 +1,9 @@
 package com.dskroba.notion;
 
 import com.dskroba.base.exception.CustomException;
-import com.dskroba.base.type.Pair;
 import com.dskroba.expenses.Expense;
 import com.dskroba.expenses.ExpenseTag;
+import com.dskroba.type.Timeframe;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.apache.logging.log4j.LogManager;
@@ -12,7 +12,6 @@ import org.apache.logging.log4j.Logger;
 import java.io.Reader;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -30,34 +29,16 @@ public final class DatabaseUtil {
     public static String wrapExpense(Expense expense, String databaseId) {
         String tags = expense.expenseTag().name();
 
-        return new StringBuilder().append("{")
-                .append("\"parent\":{\"database_id\":\"").append(databaseId).append("\"},")
-                .append("\"properties\":{")
-                .append("\"Amount\":{\"number\":").append(expense.amount()).append("},")
-                .append("\"Tags\":{\"multi_select\":[").append(tags).append("]},")
-                .append("\"Month\":{\"select\":{\"name\":\"").append(expense.date()).append("\"}},")
-                .append("\"Date\":{\"date\":{\"start\":\"").append(DATE_TIME_FORMATTER.format(expense.date()))
-                .append("\",\"end\":null,\"time_zone\":null}},")
-                .append("\"Notes\":{\"title\":[{\"text\":{\"content\":\"")
-                .append(Optional.ofNullable(expense.description()).orElse("")).append("\",\"link\":null}}]}")
-                .append("}}").toString();
+        return """
+                {"parent":{"database_id":"%s"},"properties":{"Amount":{"number":%s},"Tags":{"multi_select":[%s]},"Month":{"select":{"name":"%s"}},"Date":{"date":{"start":"%s","end":null,"time_zone":null}},"Notes":{"title":[{"text":{"content":"%s","link":null}}]}}}
+                """.formatted(databaseId, expense.amount(), tags, expense.date(), DATE_TIME_FORMATTER.format(expense.date()), Optional.ofNullable(expense.description()).orElse(""));
     }
 
-    public static String wrapTimeInterval(Pair<Instant, Instant> timeInterval) {
-        return new StringBuilder().append("{")
-                .append("\"filter\":{")
-                .append("\"and\":[").append("{").append("\"property\":\"Time\",").append("\"formula\":{")
-                .append("\"date\":{")
-                .append("\"on_or_after\":\"").append(INSTANT_TIME_FORMATTER.format(timeInterval.first())).append("\"")
-                .append("}").append("}").append("},")
-                .append("{")
-                .append("\"property\":\"Time\",").append("\"formula\":{").append("\"date\":{")
-                .append("\"before\":\"").append(INSTANT_TIME_FORMATTER.format(timeInterval.second())).append("\"")
-                .append("}").append("}").append("}").append("]").append("},")
-                .append("\"sorts\":[").append("{")
-                .append("\"property\":\"Time\",").append("\"direction\":\"descending\"")
-                .append("}").append("]").append("}")
-                .toString();
+    public static String wrapTimeInterval(Timeframe timeframe) {
+        return """
+                {"filter":{"and":[{"property":"Time","formula":{"date":{"on_or_after":"%s"}}},{"property":"Time","formula":{"date":{"before":"%s"}}}]},"sorts":[{"property":"Time","direction":"descending"}]}
+                """
+                .formatted(INSTANT_TIME_FORMATTER.format(timeframe.from()), INSTANT_TIME_FORMATTER.format(timeframe.to()));
     }
 
     public static List<Expense> parseExpenses(Reader reader) {

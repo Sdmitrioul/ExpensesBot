@@ -1,13 +1,12 @@
 package com.dskroba.expenses;
 
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Optional;
 
-public final class ExpenseUtils {
-    public static final SimpleDateFormat SIMPLE_DATE_FORMAT = new SimpleDateFormat("dd.MM.yyyy");
+import static com.dskroba.base.Utils.SIMPLE_DATE_FORMAT;
 
+public final class ExpenseUtils {
     public static Optional<Date> parseDate(String message) {
         try {
             return Optional.of(SIMPLE_DATE_FORMAT.parse(message));

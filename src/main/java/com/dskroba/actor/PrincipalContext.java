@@ -11,6 +11,10 @@ public final class PrincipalContext {
         return PROVIDER.get().getPrincipal().key().id();
     }
 
+    public static Long issuerId() {
+        return PROVIDER.get().getPrincipal().key().id();
+    }
+
     private volatile Principal principal;
 
     public PrincipalContext(Principal principal) {

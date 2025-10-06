@@ -48,7 +48,7 @@ public class ShowExpensesCommand implements ConsoleCommand {
         DateFilter dateFilter = parseEnum(DateFilter.class, scanner.nextLine());
 
         System.out.println("\n--- Expenses for " + dateFilter.name() + " ---");
-        List<Expense> expenses = repository.getExpenses(dateFilter.getTimeIntervals(ClockProvider.getClock()));
+        List<Expense> expenses = repository.getExpenses(dateFilter.getTimeframe(ClockProvider.getClock()), null);
 
         if (expenses.isEmpty()) {
             System.out.println("No expenses found for the selected period.");

@@ -27,9 +27,10 @@ public enum CommandStates implements State {
                     .collect(Collectors.joining(", ", "[", "]")),
             List.of()),
             "Allow import expenses from csv file."),
-    EXPORT_DATA(SelectEffect.withCancelOption("Select output file format", List.of(
-            SelectOption.base("Csv"),
-            SelectOption.base("Xlsx"))), "Allow export expenses."),
+    EXPORT_DATA(SelectEffect.withCancelOption("Select historical period.", List.of(
+            SelectOption.base("Current Month"),
+            SelectOption.base("Previous Month"),
+            SelectOption.base("All history"))), "Allow export expenses."),
     SET_ACTIVE_CURRENCY(SelectEffect.withCancelOption("Select active currency.",
             Arrays.stream(Currency.values())
                     .map(Currency::name)

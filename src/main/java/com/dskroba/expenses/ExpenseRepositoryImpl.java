@@ -1,12 +1,11 @@
 package com.dskroba.expenses;
 
-import com.dskroba.base.type.Pair;
+import com.dskroba.type.Timeframe;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.sql.DataSource;
 import java.sql.*;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -49,14 +48,18 @@ public class ExpenseRepositoryImpl implements ExpenseRepository {
     }
 
     @Override
-    public List<Expense> getExpenses(Pair<Instant, Instant> timeInterval) {
+    public List<Expense> getExpenses(Timeframe timeframe, Long issuerId) {
         var result = new ArrayList<Expense>();
         try (Connection connection = dataSource.getConnection();
              PreparedStatement selectQuery = connection.prepareStatement("""
-                             SELECT id, amount, issuer_id, description, created_at, type, currency FROM expenses WHERE created_at BETWEEN ? AND ?
+                             SELECT id, amount, issuer_id, description, created_at, type, currency
+                             FROM expenses
+                             WHERE created_at BETWEEN ? AND ?
+                                 AND issuer_id = ?
                      """)) {
-            selectQuery.setTimestamp(1, Timestamp.from(timeInterval.first()));
-            selectQuery.setTimestamp(2, Timestamp.from(timeInterval.second()));
+            selectQuery.setTimestamp(1, Timestamp.from(timeframe.from()));
+            selectQuery.setTimestamp(2, Timestamp.from(timeframe.to()));
+            selectQuery.setLong(3, issuerId);
             try (ResultSet resultSet = selectQuery.executeQuery()) {
                 while (resultSet.next()) {
                     result.add(new Expense.Builder()

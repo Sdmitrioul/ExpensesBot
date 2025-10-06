@@ -39,6 +39,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.function.Predicate;
 
+import static com.dskroba.base.Utils.getFileExtension;
+
 public class TelegramIOModule implements IOModule<Update> {
     private static final Logger log = LogManager.getLogger(TelegramIOModule.class);
 
@@ -74,7 +76,8 @@ public class TelegramIOModule implements IOModule<Update> {
             while ((bytesRead = in.read(dataBuffer, 0, 1024)) != -1) {
                 fileOutputStream.write(dataBuffer, 0, bytesRead);
             }
-            return new FileData(file.filePath(), new ContentType(memeType), fileOutputStream.toByteArray());
+            String filename = file.filePath();
+            return new FileData(filename, new ContentType(memeType, getFileExtension(filename)), fileOutputStream.toByteArray());
         } catch (URISyntaxException e) {
             log.error("Invalid URI: {}", fileUrl, e);
             throw new CustomException("Invalid URI: " + fileUrl, e);

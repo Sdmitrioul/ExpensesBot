@@ -24,6 +24,10 @@ dependencies {
     implementation("com.github.pengrad:java-telegram-bot-api:7.11.0")
     implementation("com.google.code.gson:gson")
     implementation("io.vavr:vavr:0.10.7")
+    implementation("org.apache.poi:poi-ooxml:5.3.0")
+    implementation("org.jxls:jxls-jexcel:1.0.9")
+    implementation("org.dhatim:fastexcel-reader:0.18.1")
+    implementation("org.dhatim:fastexcel:0.18.1")
 
     // Testing
     testImplementation("org.springframework.boot:spring-boot-starter-test")
