@@ -3,6 +3,7 @@ package com.dskroba.notion;
 import com.dskroba.base.http.Client;
 import com.dskroba.configurations.properties.NotionProperties;
 import com.dskroba.expenses.Expense;
+import com.dskroba.type.Currency;
 import com.dskroba.type.Timeframe;
 
 import java.net.http.HttpRequest;
@@ -38,7 +39,7 @@ public class NotionFacadeImpl implements NotionFacade {
     }
 
     @Override
-    public List<Expense> getExpenses(Timeframe timeframe, Long issuerId) {
+    public List<Expense> getExpenses(Timeframe timeframe, Long issuerId, Currency currency) {
         return Optional.ofNullable(client.loadWebResource(
                 buildUri(propertyProvider.api().url(),
                         "/v1/databases/" + propertyProvider.databaseId() + "/query"),

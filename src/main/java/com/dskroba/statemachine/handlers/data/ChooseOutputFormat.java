@@ -49,8 +49,9 @@ public class ChooseOutputFormat extends AbstractHandler {
         StateContext stateContext = StateContext.PROVIDER.get();
         Timeframe timeframe = stateContext.getAttribute(TIMEFRAME_ATTRIBUTE_NAME, Timeframe.class);
         stateContext.clearAttributes();
-        Long issuerId = PrincipalContext.issuerId();
-        List<Expense> expenses = expenseRepository.getExpenses(timeframe, issuerId);
+        List<Expense> expenses = expenseRepository.getExpenses(timeframe,
+                PrincipalContext.issuerId(),
+                PrincipalContext.currency());
         byte[] data = formatter.formatOutput(ExpenseFieldSelectors.BASIC_SELECTORS, expenses);
         ContentType contentType = formatter.contentType();
         String filename = "exported_expenses_" + Utils.datePrinter(ClockProvider.getCurrentDate()) + contentType.filenameExtension();

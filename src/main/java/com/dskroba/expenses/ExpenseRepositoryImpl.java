@@ -1,5 +1,6 @@
 package com.dskroba.expenses;
 
+import com.dskroba.type.Currency;
 import com.dskroba.type.Timeframe;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -48,7 +49,7 @@ public class ExpenseRepositoryImpl implements ExpenseRepository {
     }
 
     @Override
-    public List<Expense> getExpenses(Timeframe timeframe, Long issuerId) {
+    public List<Expense> getExpenses(Timeframe timeframe, Long issuerId, Currency currency) {
         var result = new ArrayList<Expense>();
         try (Connection connection = dataSource.getConnection();
              PreparedStatement selectQuery = connection.prepareStatement("""
@@ -56,10 +57,13 @@ public class ExpenseRepositoryImpl implements ExpenseRepository {
                              FROM expenses
                              WHERE created_at BETWEEN ? AND ?
                                  AND issuer_id = ?
+                                 AND currency = ?
+                             ORDER BY created_at DESC
                      """)) {
             selectQuery.setTimestamp(1, Timestamp.from(timeframe.from()));
             selectQuery.setTimestamp(2, Timestamp.from(timeframe.to()));
             selectQuery.setLong(3, issuerId);
+            selectQuery.setString(4, currency.name());
             try (ResultSet resultSet = selectQuery.executeQuery()) {
                 while (resultSet.next()) {
                     result.add(new Expense.Builder()

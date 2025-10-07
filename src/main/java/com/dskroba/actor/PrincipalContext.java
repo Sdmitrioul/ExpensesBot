@@ -1,6 +1,7 @@
 package com.dskroba.actor;
 
 import com.dskroba.principals.Principal;
+import com.dskroba.type.Currency;
 
 import java.util.Objects;
 
@@ -13,6 +14,10 @@ public final class PrincipalContext {
 
     public static Long issuerId() {
         return PROVIDER.get().getPrincipal().key().id();
+    }
+
+    public static Currency currency() {
+        return PROVIDER.get().getPrincipal().currency();
     }
 
     private volatile Principal principal;

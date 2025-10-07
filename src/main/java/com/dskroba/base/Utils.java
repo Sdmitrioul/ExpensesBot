@@ -1,6 +1,7 @@
 package com.dskroba.base;
 
 import com.dskroba.base.exception.CustomException;
+import com.dskroba.type.Currency;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -10,6 +11,8 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -59,6 +62,25 @@ public final class Utils {
             service.shutdownNow();
             Thread.currentThread().interrupt();
         }
+    }
+
+    public static Map<String, String> createLabels(Map<String, Double> data, Currency currency) {
+        int longestKey = 0;
+        int longestValue = 0;
+        Map<String, String> result = new HashMap<>();
+        for (Map.Entry<String, Double> entry : data.entrySet()) {
+            String key = entry.getKey();
+            longestKey = Math.max(longestKey, key.length());
+            String valueString = Utils.doublePrinter(entry.getValue());
+            longestValue = Math.max(longestValue, valueString.length());
+            result.put(key, valueString);
+        }
+        String format = "%-" + longestKey + "s - %" + longestValue + "s%s";
+        for (Map.Entry<String, Double> entry : data.entrySet()) {
+            String key = entry.getKey();
+            result.merge(key, "", (old, _) -> String.format(format, key, old, currency.value()));
+        }
+        return result;
     }
 
     private Utils() {

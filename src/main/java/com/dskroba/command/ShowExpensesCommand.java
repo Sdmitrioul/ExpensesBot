@@ -3,6 +3,7 @@ package com.dskroba.command;
 import com.dskroba.base.ClockProvider;
 import com.dskroba.base.exception.CustomException;
 import com.dskroba.expenses.ExpenseRepository;
+import com.dskroba.type.Currency;
 import com.dskroba.type.DateFilter;
 import com.dskroba.expenses.Expense;
 import org.apache.logging.log4j.LogManager;
@@ -48,7 +49,7 @@ public class ShowExpensesCommand implements ConsoleCommand {
         DateFilter dateFilter = parseEnum(DateFilter.class, scanner.nextLine());
 
         System.out.println("\n--- Expenses for " + dateFilter.name() + " ---");
-        List<Expense> expenses = repository.getExpenses(dateFilter.getTimeframe(ClockProvider.getClock()), null);
+        List<Expense> expenses = repository.getExpenses(dateFilter.getTimeframe(ClockProvider.getClock()), null, Currency.EUR);
 
         if (expenses.isEmpty()) {
             System.out.println("No expenses found for the selected period.");
