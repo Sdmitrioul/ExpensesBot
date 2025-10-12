@@ -2,7 +2,7 @@ package com.dskroba.command;
 
 import com.dskroba.expenses.Expense;
 import com.dskroba.expenses.ExpenseRepository;
-import com.dskroba.expenses.ExpenseTag;
+import com.dskroba.expenses.ExpenseType;
 import com.dskroba.type.Currency;
 import io.vavr.collection.Stream;
 import org.jetbrains.annotations.NotNull;
@@ -65,11 +65,11 @@ public class ImportExpensesCommand implements ConsoleCommand {
         LocalDate localDate = parseDate(dateStr);
         Date date = Date.from(localDate.atStartOfDay().atZone(java.time.ZoneId.systemDefault()).toInstant());
         String description = parts[3].replace("\"", "");
-        ExpenseTag expenseTag = mapToExpenseTag(parts[0]);
-        if (expenseTag == ExpenseTag.MISCELLANEOUS) {
-            System.out.println("Unrecognized tag: " + parts[0] + ". Using default tag: " + expenseTag);
+        ExpenseType expenseType = mapToExpenseTag(parts[0]);
+        if (expenseType == ExpenseType.MISCELLANEOUS) {
+            System.out.println("Unrecognized tag: " + parts[0] + ". Using default tag: " + expenseType);
         }
-        return new Expense(null, amount, -1L, date, description, expenseTag, Currency.EUR);
+        return new Expense(null, amount, -1L, date, description, expenseType, Currency.EUR);
     }
 
     private static LocalDate parseDate(String dateStr) {
@@ -96,23 +96,23 @@ public class ImportExpensesCommand implements ConsoleCommand {
         throw new IllegalArgumentException("Unable to parse date: " + dateStr);
     }
 
-    private static ExpenseTag mapToExpenseTag(String tagStr) {
+    private static ExpenseType mapToExpenseTag(String tagStr) {
         return switch (tagStr.toUpperCase()) {
-            case "GROCERIES" -> ExpenseTag.FOOD;
-            case "BILLS" -> ExpenseTag.BILLS;
-            case "TRANSPORT" -> ExpenseTag.TRANSPORT;
-            case "HEALTHCARE", "HEALTH" -> ExpenseTag.HEALTHCARE;
-            case "ANIMAL", "DOG" -> ExpenseTag.ANIMAL;
-            case "ENTERTAINMENT" -> ExpenseTag.ENTERTAINMENT;
-            case "CLOTHES" -> ExpenseTag.CLOTHES;
-            case "BEAUTY" -> ExpenseTag.BEAUTY;
-            case "HOME" -> ExpenseTag.HOME;
-            case "SPORT" -> ExpenseTag.SPORT;
-            case "SAVINGS" -> ExpenseTag.SAVINGS;
-            case "DEBT" -> ExpenseTag.DEBT;
-            case "INSURANCE" -> ExpenseTag.INSURANCE;
-            case "CAFE" -> ExpenseTag.CAFE;
-            default -> ExpenseTag.MISCELLANEOUS;
+            case "GROCERIES" -> ExpenseType.FOOD;
+            case "BILLS" -> ExpenseType.BILLS;
+            case "TRANSPORT" -> ExpenseType.TRANSPORT;
+            case "HEALTHCARE", "HEALTH" -> ExpenseType.HEALTHCARE;
+            case "ANIMAL", "DOG" -> ExpenseType.ANIMAL;
+            case "ENTERTAINMENT" -> ExpenseType.ENTERTAINMENT;
+            case "CLOTHES" -> ExpenseType.CLOTHES;
+            case "BEAUTY" -> ExpenseType.BEAUTY;
+            case "HOME" -> ExpenseType.HOME;
+            case "SPORT" -> ExpenseType.SPORT;
+            case "SAVINGS" -> ExpenseType.SAVINGS;
+            case "DEBT" -> ExpenseType.DEBT;
+            case "INSURANCE" -> ExpenseType.INSURANCE;
+            case "CAFE" -> ExpenseType.CAFE;
+            default -> ExpenseType.MISCELLANEOUS;
         };
     }
 }

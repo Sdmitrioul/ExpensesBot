@@ -14,8 +14,8 @@ databaseChangeLog:
                     primaryKey: true
                     nullable: false
               - column:
-                  name: issuer_id
-                  type: bigint
+                  name: type
+                  type: varchar(32)
                   constraints:
                     nullable: false
               - column:
@@ -24,22 +24,27 @@ databaseChangeLog:
                   constraints:
                     nullable: false
               - column:
+                  name: currency
+                  type: varchar(8)
+                  constraints:
+                    nullable: false
+              - column:
                   name: description
                   type: varchar(255)
+              - column:
+                  name: issuer_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: group_id
+                  type: bigint
+                  constraints:
+                    nullable: false
               - column:
                   name: created_at
                   type: timestamp
                   defaultValueComputed: CURRENT_TIMESTAMP
-                  constraints:
-                    nullable: false
-              - column:
-                  name: type
-                  type: varchar(32)
-                  constraints:
-                    nullable: false
-              - column:
-                  name: currency
-                  type: varchar(8)
                   constraints:
                     nullable: false
 

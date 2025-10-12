@@ -1,6 +1,8 @@
 package com.dskroba.configurations;
 
 import com.dskroba.configurations.properties.NotionProperties;
+import com.dskroba.groups.GroupRepository;
+import com.dskroba.groups.GroupRepositoryInMem;
 import com.dskroba.notion.NotionContext;
 import com.dskroba.notion.NotionFacade;
 import com.dskroba.principals.PrincipalRepository;
@@ -31,5 +33,10 @@ public class NotionConfiguration {
     @Bean
     public PrincipalRepository principalRepository() {
         return new PrincipalsRepositoryInMem();
+    }
+
+    @Bean
+    public GroupRepository groupRepository() {
+        return new GroupRepositoryInMem();
     }
 }

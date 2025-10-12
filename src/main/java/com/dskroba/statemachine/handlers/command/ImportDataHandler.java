@@ -106,6 +106,7 @@ public class ImportDataHandler extends AbstractHandler {
         try {
             repository.insertExpense(expenses.stream()
                     .map(expense -> expense.issuerId(principal.key().id()))
+                    .map(expense -> expense.groupId(principal.group()))
                     .map(expense -> {
                         if (expense.currency() == null) {
                             return expense.currency(principal.currency());

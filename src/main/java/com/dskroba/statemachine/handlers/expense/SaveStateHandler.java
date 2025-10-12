@@ -44,7 +44,8 @@ public class SaveStateHandler extends AbstractHandler {
     private List<Effect<?>> saveExpense() {
         var context = StateContext.PROVIDER.get();
         var builder = context.getAttribute(EXPENSE_ATTRIBUTE_NAME, Expense.Builder.class);
-        builder.currency(PrincipalContext.PROVIDER.get().getPrincipal().currency());
+        builder.currency(PrincipalContext.currency());
+        builder.groupId(PrincipalContext.group());
         context.clearAttributes();
         var success = repository.insertExpense(builder.build());
         List<Effect<?>> effects = new ArrayList<>();

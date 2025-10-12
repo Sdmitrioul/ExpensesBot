@@ -1,6 +1,6 @@
 package com.dskroba.statemachine.state;
 
-import com.dskroba.expenses.ExpenseTag;
+import com.dskroba.expenses.ExpenseType;
 import com.dskroba.statemachine.effects.Effect;
 import com.dskroba.statemachine.effects.MessageEffect;
 import com.dskroba.statemachine.effects.SelectEffect;
@@ -14,8 +14,8 @@ import static com.dskroba.type.SelectOption.fullRowOption;
 
 public enum ExpenseStates implements State {
     CHOOSE_TAG(SelectEffect.withCancelOption("Choose expense tag: ",
-            Arrays.stream(ExpenseTag.values())
-                    .map(ExpenseTag::optionName)
+            Arrays.stream(ExpenseType.values())
+                    .map(ExpenseType::optionName)
                     .map(SelectOption::base)
                     .toList())),
     ADD_AMOUNT(new MessageEffect("Enter expense amount: ")),

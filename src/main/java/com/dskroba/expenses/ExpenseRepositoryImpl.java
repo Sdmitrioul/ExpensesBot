@@ -29,15 +29,16 @@ public class ExpenseRepositoryImpl implements ExpenseRepository {
     public boolean insertExpense(List<Expense> expenses) {
         try (Connection connection = dataSource.getConnection();
              PreparedStatement insertQuery = connection.prepareStatement("""
-                             INSERT INTO expenses (amount, issuer_id, description, created_at, type, currency) VALUES (?, ?, ?, ?, ?, ?)
+                             INSERT INTO expenses (type, amount, currency, description, issuer_id, group_id, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)
                      """)) {
             for (Expense expense : expenses) {
-                insertQuery.setDouble(1, expense.amount());
-                insertQuery.setLong(2, expense.issuer());
-                insertQuery.setString(3, expense.description());
-                insertQuery.setTimestamp(4, new Timestamp(expense.date().toInstant().toEpochMilli()));
-                insertQuery.setString(5, expense.expenseTag().name());
-                insertQuery.setString(6, expense.currency().name());
+                insertQuery.setString(1, expense.expenseType().name());
+                insertQuery.setDouble(2, expense.amount());
+                insertQuery.setString(3, expense.currency().name());
+                insertQuery.setString(4, expense.description());
+                insertQuery.setLong(5, expense.issuer());
+                insertQuery.setLong(6, expense.group());
+                insertQuery.setTimestamp(7, new Timestamp(expense.date().toInstant().toEpochMilli()));
                 insertQuery.addBatch();
             }
             insertQuery.executeBatch();
@@ -49,31 +50,32 @@ public class ExpenseRepositoryImpl implements ExpenseRepository {
     }
 
     @Override
-    public List<Expense> getExpenses(Timeframe timeframe, Long issuerId, Currency currency) {
+    public List<Expense> getExpenses(Timeframe timeframe, Long groupId, Currency currency) {
         var result = new ArrayList<Expense>();
         try (Connection connection = dataSource.getConnection();
              PreparedStatement selectQuery = connection.prepareStatement("""
-                             SELECT id, amount, issuer_id, description, created_at, type, currency
+                             SELECT id, type, amount, currency, description, issuer_id, group_id, created_at
                              FROM expenses
                              WHERE created_at BETWEEN ? AND ?
-                                 AND issuer_id = ?
+                                 AND group_id = ?
                                  AND currency = ?
                              ORDER BY created_at DESC
                      """)) {
             selectQuery.setTimestamp(1, Timestamp.from(timeframe.from()));
             selectQuery.setTimestamp(2, Timestamp.from(timeframe.to()));
-            selectQuery.setLong(3, issuerId);
+            selectQuery.setLong(3, groupId);
             selectQuery.setString(4, currency.name());
             try (ResultSet resultSet = selectQuery.executeQuery()) {
                 while (resultSet.next()) {
                     result.add(new Expense.Builder()
                             .id(resultSet.getLong(1))
-                            .amount(resultSet.getDouble(2))
-                            .issuerId(resultSet.getLong(3))
-                            .description(resultSet.getString(4))
-                            .date(Date.from(resultSet.getTimestamp(5).toInstant()))
-                            .type(resultSet.getString(6))
-                            .currency(resultSet.getString(7))
+                            .type(resultSet.getString(2))
+                            .amount(resultSet.getDouble(3))
+                            .currency(resultSet.getString(4))
+                            .description(resultSet.getString(5))
+                            .issuerId(resultSet.getLong(6))
+                            .groupId(resultSet.getLong(7))
+                            .date(Date.from(resultSet.getTimestamp(8).toInstant()))
                             .build());
                 }
             }

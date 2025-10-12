@@ -3,5 +3,6 @@
   <component name="DataSourcePerFileMappings">
     <file url="file://$APPLICATION_CONFIG_DIR$/consoles/db/aaf5aad5-6653-42a4-b14e-f75862a59561/console.sql" value="aaf5aad5-6653-42a4-b14e-f75862a59561" />
     <file url="file://$PROJECT_DIR$/src/main/java/com/dskroba/principals/PrincipalRepositoryDAO.java" value="aaf5aad5-6653-42a4-b14e-f75862a59561" />
+    <file url="file://$PROJECT_DIR$/src/main/resources/database/changes/principal-default-group-trigger.sql" value="aaf5aad5-6653-42a4-b14e-f75862a59561" />
   </component>
 </project>

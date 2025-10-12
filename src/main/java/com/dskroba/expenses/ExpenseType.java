@@ -1,6 +1,6 @@
 package com.dskroba.expenses;
 
-public enum ExpenseTag {
+public enum ExpenseType {
     BILLS("#FF5722"),
     FOOD("#4CAF50"),
     TRANSPORT("#2196F3"),
@@ -19,7 +19,7 @@ public enum ExpenseTag {
 
     private final String color;
 
-    ExpenseTag(String color) {
+    ExpenseType(String color) {
         this.color = color;
     }
 

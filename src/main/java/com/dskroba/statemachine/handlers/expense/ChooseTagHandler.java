@@ -4,7 +4,7 @@ import com.dskroba.actor.PrincipalContext;
 import com.dskroba.actor.StateContext;
 import com.dskroba.base.ClockProvider;
 import com.dskroba.expenses.Expense;
-import com.dskroba.expenses.ExpenseTag;
+import com.dskroba.expenses.ExpenseType;
 import com.dskroba.expenses.ExpenseUtils;
 import com.dskroba.statemachine.effects.Effect;
 import com.dskroba.statemachine.events.Event;
@@ -27,7 +27,7 @@ public class ChooseTagHandler extends AbstractHandler {
                 .map(this::processTag);
     }
 
-    private List<Effect<?>> processTag(ExpenseTag tag) {
+    private List<Effect<?>> processTag(ExpenseType tag) {
         StateContext stateContext = StateContext.PROVIDER.get();
         stateContext.setAttribute(EXPENSE_ATTRIBUTE_NAME, new Expense.Builder()
                 .type(tag)

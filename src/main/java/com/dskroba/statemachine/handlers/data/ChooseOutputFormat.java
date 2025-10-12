@@ -50,7 +50,7 @@ public class ChooseOutputFormat extends AbstractHandler {
         Timeframe timeframe = stateContext.getAttribute(TIMEFRAME_ATTRIBUTE_NAME, Timeframe.class);
         stateContext.clearAttributes();
         List<Expense> expenses = expenseRepository.getExpenses(timeframe,
-                PrincipalContext.issuerId(),
+                PrincipalContext.group(),
                 PrincipalContext.currency());
         byte[] data = formatter.formatOutput(ExpenseFieldSelectors.BASIC_SELECTORS, expenses);
         ContentType contentType = formatter.contentType();

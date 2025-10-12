@@ -1,6 +1,6 @@
 databaseChangeLog:
   - changeSet:
-      id: create-table-tg_users
+      id: create-table-principals
       author: dskroba
       changes:
         - createTable:
@@ -35,4 +35,6 @@ databaseChangeLog:
                   type: varchar(8)
                   constraints:
                     nullable: false
-
+              - column:
+                  name: active_group_id
+                  type: bigint

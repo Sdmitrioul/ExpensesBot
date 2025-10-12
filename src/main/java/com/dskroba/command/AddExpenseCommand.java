@@ -4,7 +4,7 @@ import com.dskroba.base.ClockProvider;
 import com.dskroba.base.exception.CustomException;
 import com.dskroba.expenses.Expense;
 import com.dskroba.expenses.ExpenseRepository;
-import com.dskroba.expenses.ExpenseTag;
+import com.dskroba.expenses.ExpenseType;
 import com.dskroba.type.Currency;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 public class AddExpenseCommand implements ConsoleCommand {
     private static final Logger LOGGER = LogManager.getLogger(AddExpenseCommand.class);
 
-    private static final String AVAILABLE_TAGS = Arrays.stream(ExpenseTag.values())
+    private static final String AVAILABLE_TAGS = Arrays.stream(ExpenseType.values())
             .map(Enum::name)
             .collect(Collectors.joining(", ", "{", "}"));
 
@@ -48,7 +48,7 @@ public class AddExpenseCommand implements ConsoleCommand {
         int amount = Integer.parseInt(scanner.nextLine());
 
         System.out.print("Tag " + AVAILABLE_TAGS + ": ");
-        ExpenseTag tag = parseEnum(ExpenseTag.class, scanner.nextLine());
+        ExpenseType tag = parseEnum(ExpenseType.class, scanner.nextLine());
 
         System.out.print("Note: ");
         String note = scanner.nextLine();

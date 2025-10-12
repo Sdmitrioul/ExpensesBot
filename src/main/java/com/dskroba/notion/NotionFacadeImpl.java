@@ -39,7 +39,7 @@ public class NotionFacadeImpl implements NotionFacade {
     }
 
     @Override
-    public List<Expense> getExpenses(Timeframe timeframe, Long issuerId, Currency currency) {
+    public List<Expense> getExpenses(Timeframe timeframe, Long groupId, Currency currency) {
         return Optional.ofNullable(client.loadWebResource(
                 buildUri(propertyProvider.api().url(),
                         "/v1/databases/" + propertyProvider.databaseId() + "/query"),

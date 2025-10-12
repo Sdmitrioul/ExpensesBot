@@ -2,7 +2,7 @@ package com.dskroba.notion;
 
 import com.dskroba.base.exception.CustomException;
 import com.dskroba.expenses.Expense;
-import com.dskroba.expenses.ExpenseTag;
+import com.dskroba.expenses.ExpenseType;
 import com.dskroba.type.Timeframe;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -27,7 +27,7 @@ public final class DatabaseUtil {
             .withZone(ZoneId.systemDefault());
 
     public static String wrapExpense(Expense expense, String databaseId) {
-        String tags = expense.expenseTag().name();
+        String tags = expense.expenseType().name();
 
         return """
                 {"parent":{"database_id":"%s"},"properties":{"Amount":{"number":%s},"Tags":{"multi_select":[%s]},"Month":{"select":{"name":"%s"}},"Date":{"date":{"start":"%s","end":null,"time_zone":null}},"Notes":{"title":[{"text":{"content":"%s","link":null}}]}}}
@@ -91,7 +91,7 @@ public final class DatabaseUtil {
                             .map(element -> element.toUpperCase(Locale.ROOT))
                             .map(tag -> {
                                 try {
-                                    return ExpenseTag.valueOf(tag);
+                                    return ExpenseType.valueOf(tag);
                                 } catch (IllegalArgumentException e) {
                                     return null;
                                 }

@@ -20,6 +20,10 @@ public final class PrincipalContext {
         return PROVIDER.get().getPrincipal().currency();
     }
 
+    public static Long group() {
+        return PROVIDER.get().getPrincipal().group();
+    }
+
     private volatile Principal principal;
 
     public PrincipalContext(Principal principal) {

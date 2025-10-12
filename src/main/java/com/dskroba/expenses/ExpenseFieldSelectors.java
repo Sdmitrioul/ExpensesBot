@@ -9,7 +9,7 @@ import java.util.List;
 
 public enum ExpenseFieldSelectors implements FieldSelector<Expense> {
     ID(LongExtractor.of(Expense::id)),
-    TAG(EnumExtractor.of(Expense::expenseTag)),
+    TAG(EnumExtractor.of(Expense::expenseType)),
     AMOUNT(DoubleExtractor.of(Expense::amount)),
     CURRENCY(EnumExtractor.of(Expense::currency)),
     DATE(DateExtractor.of(Expense::date)),

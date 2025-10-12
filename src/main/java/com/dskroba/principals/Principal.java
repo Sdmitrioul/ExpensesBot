@@ -4,7 +4,7 @@ import com.dskroba.type.Currency;
 
 import java.util.Objects;
 
-public record Principal(PrincipalKey key, String code, Long chatId, Currency currency) {
+public record Principal(PrincipalKey key, String code, Long chatId, Currency currency, Long group) {
     public boolean isResolved() {
         return key.isResolved();
     }
@@ -12,7 +12,8 @@ public record Principal(PrincipalKey key, String code, Long chatId, Currency cur
     public boolean isDifferent(Principal principal) {
         return !(Objects.equals(code, principal.code())
                 && Objects.equals(chatId, principal.chatId())
-                && Objects.equals(currency, principal.currency()));
+                && Objects.equals(currency, principal.currency())
+                && Objects.equals(group, principal.group()));
     }
 
     public static class Builder {
@@ -21,6 +22,7 @@ public record Principal(PrincipalKey key, String code, Long chatId, Currency cur
         private String code;
         private Long chatId;
         private Currency currency;
+        private Long group;
 
         public static Builder from(Principal principal) {
             PrincipalKey key = principal.key();
@@ -31,7 +33,8 @@ public record Principal(PrincipalKey key, String code, Long chatId, Currency cur
                     .telegramId(telegramId)
                     .code(principal.code())
                     .chatId(principal.chatId())
-                    .currency(principal.currency());
+                    .currency(principal.currency())
+                    .group(principal.group());
         }
 
         public Builder id(Long id) {
@@ -64,6 +67,11 @@ public record Principal(PrincipalKey key, String code, Long chatId, Currency cur
             return this;
         }
 
+        public Builder group(Long group) {
+            this.group = group;
+            return this;
+        }
+
         public Builder merge(Principal principal) {
             PrincipalKey key = principal.key();
             if (key != null) {
@@ -77,6 +85,9 @@ public record Principal(PrincipalKey key, String code, Long chatId, Currency cur
             if (principal.currency() != null) {
                 this.currency = principal.currency();
             }
+            if (principal.group() != null) {
+                this.group = principal.group();
+            }
             if (principal.code() != null) {
                 this.code = principal.code();
             }
@@ -87,7 +98,7 @@ public record Principal(PrincipalKey key, String code, Long chatId, Currency cur
         }
 
         public Principal build() {
-            return new Principal(new PrincipalKey(id, telegramId), code, chatId, currency);
+            return new Principal(new PrincipalKey(id, telegramId), code, chatId, currency, group);
         }
     }
 }

@@ -1,6 +1,6 @@
 package com.dskroba.statemachine.state;
 
-import com.dskroba.expenses.ExpenseTag;
+import com.dskroba.expenses.ExpenseType;
 import com.dskroba.statemachine.effects.Effect;
 import com.dskroba.statemachine.effects.SelectEffect;
 import com.dskroba.type.Currency;
@@ -22,7 +22,7 @@ public enum CommandStates implements State {
                     File must contain header.
                     Next columns are required: [amount, tag, date].
                     Date must be in format: dd.MM.yyyy
-                    Tag column must be one of:\s""" + Arrays.stream(ExpenseTag.values())
+                    Tag column must be one of:\s""" + Arrays.stream(ExpenseType.values())
                     .map(Enum::name)
                     .collect(Collectors.joining(", ", "[", "]")),
             List.of()),
@@ -35,7 +35,12 @@ public enum CommandStates implements State {
             Arrays.stream(Currency.values())
                     .map(Currency::name)
                     .map(SelectOption::base)
-                    .toList()), "Allow setup of active account currency.");
+                    .toList()), "Allow setup of active account currency."),
+    GROUP_SETTINGS(SelectEffect.withCancelOption("Select group operation.", List.of(
+            SelectOption.base("Set active group"),
+            SelectOption.base("Create group"),
+            SelectOption.base("Update group")
+    )), "Settings for the user groups");
 
     private final Effect<?> effect;
     private final String description;

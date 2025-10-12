@@ -89,9 +89,9 @@ public class StatisticHandler extends AbstractHandler {
 
     private List<Effect<?>> createAndSendGraphic(DateFilter dateFilter) {
         Timeframe timeframe = dateFilter.getTimeframe(ClockProvider.getClock());
-        Long issuerId = PrincipalContext.issuerId();
+        Long groupId = PrincipalContext.group();
         Currency currency = PrincipalContext.currency();
-        Map<String, Double> groupedExpenses = getGroupedExpenses(timeframe, issuerId, currency);
+        Map<String, Double> groupedExpenses = getGroupedExpenses(timeframe, groupId, currency);
         if (groupedExpenses.isEmpty()) {
             return sendEffect(new MessageEffect("No expenses found for the selected period."));
         }
@@ -103,12 +103,12 @@ public class StatisticHandler extends AbstractHandler {
     }
 
     @NotNull
-    private Map<String, Double> getGroupedExpenses(Timeframe timeframe, Long issuerId, Currency currency) {
+    private Map<String, Double> getGroupedExpenses(Timeframe timeframe, Long groupId, Currency currency) {
         return expenseRepository.getExpenses(timeframe,
-                        issuerId,
+                        groupId,
                         currency)
                 .stream()
-                .collect(Collectors.groupingBy(FP.compose(Expense::expenseTag, Enum::name),
+                .collect(Collectors.groupingBy(FP.compose(Expense::expenseType, Enum::name),
                         Collectors.summingDouble(Expense::amount)));
     }
 

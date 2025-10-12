@@ -26,9 +26,9 @@ public final class ExpenseUtils {
         }
     }
 
-    public static Optional<ExpenseTag> parseTag(String tag) {
+    public static Optional<ExpenseType> parseTag(String tag) {
         try {
-            return Optional.of(ExpenseTag.valueOf(tag.toUpperCase()));
+            return Optional.of(ExpenseType.valueOf(tag.toUpperCase()));
         } catch (IllegalArgumentException e) {
             return Optional.empty();
         }
