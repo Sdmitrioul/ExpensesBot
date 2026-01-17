@@ -80,7 +80,7 @@ public final class PrincipalRepositoryDAO implements PrincipalRepository {
     public List<Principal> getPrincipals() {
         List<Principal> principals = new ArrayList<>();
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement selectQuery = connection.prepareStatement("SELECT id, telegram_id, username, chat_id, currecny FROM principals");
+             PreparedStatement selectQuery = connection.prepareStatement("SELECT id, telegram_id, username, chat_id, currency FROM principals");
              ResultSet resultSet = selectQuery.executeQuery()) {
             while (resultSet.next()) {
                 principals.add(mapPrincipal(resultSet));

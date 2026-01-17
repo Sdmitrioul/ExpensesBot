@@ -1,5 +1,6 @@
 package com.dskroba.command;
 
+import com.dskroba.base.ClockProvider;
 import com.dskroba.expenses.Expense;
 import com.dskroba.expenses.ExpenseRepository;
 import com.dskroba.expenses.ExpenseType;
@@ -69,7 +70,15 @@ public class ImportExpensesCommand implements ConsoleCommand {
         if (expenseType == ExpenseType.MISCELLANEOUS) {
             System.out.println("Unrecognized tag: " + parts[0] + ". Using default tag: " + expenseType);
         }
-        return new Expense(null, amount, -1L, date, description, expenseType, Currency.EUR);
+        return new Expense(
+                null,
+                expenseType,
+                amount,
+                Currency.EUR,
+                description,
+                -1L, -1L,
+                date
+        );
     }
 
     private static LocalDate parseDate(String dateStr) {

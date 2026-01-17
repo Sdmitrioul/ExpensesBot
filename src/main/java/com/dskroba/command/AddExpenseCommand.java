@@ -55,12 +55,12 @@ public class AddExpenseCommand implements ConsoleCommand {
 
         Expense expense = new Expense(
                 null,
-                amount,
-                -1L,
-                Date.from(ClockProvider.getClock().instant()),
-                note,
                 tag,
-                Currency.EUR
+                amount,
+                Currency.EUR,
+                note,
+                -1L, -1L,
+                Date.from(ClockProvider.getClock().instant())
         );
 
         boolean success = repository.insertExpense(expense);

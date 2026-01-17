@@ -17,4 +17,12 @@ public class GroupService {
     public List<Group> getPrincipalGroups(Long principalId) {
         return repository.getPrincipalGroups(principalId);
     }
+
+    public void createGroup(Group group) {
+        repository.saveGroup(group);
+    }
+
+    public void leaveGroup(Long groupId, Long principalId) {
+        repository.leaveGroup(groupId, principalId);
+    }
 }
