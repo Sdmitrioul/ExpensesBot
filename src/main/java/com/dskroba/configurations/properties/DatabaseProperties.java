@@ -7,14 +7,9 @@ import org.springframework.validation.annotation.Validated;
 @ConfigurationProperties(prefix = "application.database")
 @Validated
 public record DatabaseProperties(
-        boolean enabled,
         @NotBlank
-        String url,
-
+        String name,
         @NotBlank
-        String username,
-
-        @NotBlank
-        String password
+        String path
 ) {
 }

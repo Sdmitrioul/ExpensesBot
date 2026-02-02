@@ -8,7 +8,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
         scanBasePackages = {"com.dskroba"}
 )
 public class ExpenseBotApplication {
-    public static void main(String[] args) {
+    static void main(String[] args) {
         Configuration.loadGlobalProperties();
         SpringApplication.run(ExpenseBotApplication.class, args);
     }

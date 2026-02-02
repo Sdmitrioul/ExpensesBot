@@ -91,7 +91,7 @@ public class TelegramIOModule implements IOModule<Update> {
     }
 
     @Override
-    public Principal provideIssuer(Update input) {
+    public TelegramId provideIssuer(Update input) {
         User user = TelegramUtils.user(input);
         if (user == null) {
             return null;
@@ -99,11 +99,7 @@ public class TelegramIOModule implements IOModule<Update> {
         Long id = user.id();
         String name = user.username();
         Long chatId = TelegramUtils.chatId(input);
-        return new Principal.Builder()
-                .telegramId(id)
-                .code(name)
-                .chatId(chatId)
-                .build();
+        return new TelegramId(id, name, chatId);
     }
 
     @Override
@@ -154,6 +150,6 @@ public class TelegramIOModule implements IOModule<Update> {
     }
 
     private static Long chatId() {
-        return PrincipalContext.PROVIDER.get().getPrincipal().chatId();
+        return PrincipalContext.PROVIDER.get().getPrincipal().key().chatId();
     }
 }

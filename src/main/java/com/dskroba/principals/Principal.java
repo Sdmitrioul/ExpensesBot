@@ -1,104 +1,92 @@
 package com.dskroba.principals;
 
+import com.dskroba.google.GoogleTable;
+import com.dskroba.telegram.TelegramId;
 import com.dskroba.type.Currency;
 
-import java.util.Objects;
+import java.util.List;
 
-public record Principal(PrincipalKey key, String code, Long chatId, Currency currency, Long group) {
-    public boolean isResolved() {
-        return key.isResolved();
+public record Principal(
+        TelegramId key,
+        PrincipalContext context
+) {
+    public static final Long NONEXISTING_TABLE = -1L;
+
+    public Long id() {
+        return key.telegramId();
     }
 
-    public boolean isDifferent(Principal principal) {
-        return !(Objects.equals(code, principal.code())
-                && Objects.equals(chatId, principal.chatId())
-                && Objects.equals(currency, principal.currency())
-                && Objects.equals(group, principal.group()));
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static Builder builder(TelegramId telegramId) {
+        return new Builder().telegramId(telegramId);
+    }
+
+    public static Builder builder(Principal source) {
+        return new Builder()
+                .telegramId(source.key())
+                .context(source.context());
+    }
+
+    public Builder toBuilder() {
+        return builder(this);
     }
 
     public static class Builder {
-        private Long id;
-        private Long telegramId;
-        private String code;
-        private Long chatId;
-        private Currency currency;
-        private Long group;
+        private TelegramId key;
+        private PrincipalContext context;
 
-        public static Builder from(Principal principal) {
-            PrincipalKey key = principal.key();
-            Long id = key != null ? key.id() : null;
-            Long telegramId = key != null ? key.telegramId() : null;
-            return new Builder()
-                    .id(id)
-                    .telegramId(telegramId)
-                    .code(principal.code())
-                    .chatId(principal.chatId())
-                    .currency(principal.currency())
-                    .group(principal.group());
-        }
-
-        public Builder id(Long id) {
-            this.id = id;
+        public Builder telegramId(TelegramId telegramId) {
+            this.key = telegramId;
             return this;
         }
 
-        public Builder telegramId(Long telegramId) {
-            this.telegramId = telegramId;
+        public Builder telegramId(Long telegramId, String handle, Long chatId) {
+            this.key = new TelegramId(telegramId, handle, chatId);
             return this;
         }
 
-        public Builder code(String code) {
-            this.code = code;
+        public Builder context(PrincipalContext context) {
+            this.context = context;
             return this;
         }
 
-        public Builder chatId(Long chatId) {
-            this.chatId = chatId;
+        public Builder context(List<GoogleTable> tables, Currency activeCurrency, String activeTableId) {
+            this.context = new PrincipalContext(tables, activeCurrency, activeTableId);
             return this;
         }
 
-        public Builder currency(Currency currency) {
-            this.currency = currency;
+        public Builder tables(List<GoogleTable> tables) {
+            this.context = new PrincipalContext(
+                    tables,
+                    context != null ? context.activeCurrency() : null,
+                    context != null ? context.activeTableId() : null
+            );
             return this;
         }
 
-        public Builder currency(String currency) {
-            this.currency = Currency.parseValue(currency);
+        public Builder activeCurrency(Currency currency) {
+            this.context = new PrincipalContext(
+                    context != null ? context.tables() : null,
+                    currency,
+                    context != null ? context.activeTableId() : null
+            );
             return this;
         }
 
-        public Builder group(Long group) {
-            this.group = group;
-            return this;
-        }
-
-        public Builder merge(Principal principal) {
-            PrincipalKey key = principal.key();
-            if (key != null) {
-                if (key.id() != null) {
-                    this.id = key.id();
-                }
-                if (key.telegramId() != null) {
-                    this.telegramId = key.telegramId();
-                }
-            }
-            if (principal.currency() != null) {
-                this.currency = principal.currency();
-            }
-            if (principal.group() != null) {
-                this.group = principal.group();
-            }
-            if (principal.code() != null) {
-                this.code = principal.code();
-            }
-            if (principal.chatId() != null) {
-                this.chatId = principal.chatId();
-            }
+        public Builder activeTableId(String tableId) {
+            this.context = new PrincipalContext(
+                    context != null ? context.tables() : null,
+                    context != null ? context.activeCurrency() : null,
+                    tableId
+            );
             return this;
         }
 
         public Principal build() {
-            return new Principal(new PrincipalKey(id, telegramId), code, chatId, currency, group);
+            return new Principal(key, context);
         }
     }
 }

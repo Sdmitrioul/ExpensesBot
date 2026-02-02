@@ -34,8 +34,8 @@ public class SetActiveCurrencyHandler extends AbstractHandler {
 
     private List<Effect<?>> processCurrency(Currency currency) {
         var context = PrincipalContext.PROVIDER.get();
-        var updatedPrincipal = Principal.Builder.from(context.getPrincipal())
-                .currency(currency)
+        var updatedPrincipal = context.getPrincipal().toBuilder()
+                .activeCurrency(currency)
                 .build();
         context.setPrincipal(principalService.savePrincipal(updatedPrincipal));
         StateContext.PROVIDER.get().setState(CommandStates.MENU);

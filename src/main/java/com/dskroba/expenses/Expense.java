@@ -4,30 +4,21 @@ import com.dskroba.type.Currency;
 
 import java.util.Date;
 
-public record Expense(Long id,
-                      ExpenseType expenseType,
+public record Expense(ExpenseType expenseType,
                       double amount,
                       Currency currency,
                       String description,
                       Long issuer,
-                      Long group,
                       Date date) {
     public static class Builder {
-        private Long id;
         private ExpenseType type = ExpenseType.MISCELLANEOUS;
         private double amount;
         private Currency currency;
         private String description;
         private Long issuerId;
-        private Long groupId;
         private Date date;
 
         public Builder() {
-        }
-
-        public Builder id(Long id) {
-            this.id = id;
-            return this;
         }
 
         public Builder amount(double amount) {
@@ -78,13 +69,32 @@ public record Expense(Long id,
             return this.currency;
         }
 
-        public Builder groupId(Long id) {
-            this.groupId = id;
-            return this;
+        public ExpenseType getType() {
+            return type;
+        }
+
+        public double getAmount() {
+            return amount;
+        }
+
+        public Currency getCurrency() {
+            return currency;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        public Long getIssuerId() {
+            return issuerId;
+        }
+
+        public Date getDate() {
+            return date;
         }
 
         public Expense build() {
-            return new Expense(id, type, amount, currency, description, issuerId, groupId, date);
+            return new Expense(type, amount, currency, description, issuerId, date);
         }
     }
 }

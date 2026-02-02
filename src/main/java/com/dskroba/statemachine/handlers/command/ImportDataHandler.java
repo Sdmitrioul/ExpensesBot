@@ -105,16 +105,15 @@ public class ImportDataHandler extends AbstractHandler {
         var principal = PrincipalContext.PROVIDER.get().getPrincipal();
         try {
             repository.insertExpense(expenses.stream()
-                    .map(expense -> expense.issuerId(principal.key().id()))
-                    .map(expense -> expense.groupId(principal.group()))
+                    .map(expense -> expense.issuerId(principal.key().telegramId()))
                     .map(expense -> {
                         if (expense.currency() == null) {
-                            return expense.currency(principal.currency());
+                            return expense.currency(principal.context().activeCurrency());
                         }
                         return expense;
                     })
                     .map(Expense.Builder::build)
-                    .toList());
+                    .toList(), PrincipalContext.table());
         } catch (CustomException e) {
             log.error("Exception during expenses saving.", e);
             return new MessageEffect("""

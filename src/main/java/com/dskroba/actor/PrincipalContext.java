@@ -1,5 +1,6 @@
 package com.dskroba.actor;
 
+import com.dskroba.google.GoogleTable;
 import com.dskroba.principals.Principal;
 import com.dskroba.type.Currency;
 
@@ -9,19 +10,15 @@ public final class PrincipalContext {
     public static final ScopedValue<PrincipalContext> PROVIDER = ScopedValue.newInstance();
 
     public static Long principalId() {
-        return PROVIDER.get().getPrincipal().key().id();
-    }
-
-    public static Long issuerId() {
-        return PROVIDER.get().getPrincipal().key().id();
+        return PROVIDER.get().getPrincipal().key().telegramId();
     }
 
     public static Currency currency() {
-        return PROVIDER.get().getPrincipal().currency();
+        return PROVIDER.get().getPrincipal().context().activeCurrency();
     }
 
-    public static Long group() {
-        return PROVIDER.get().getPrincipal().group();
+    public static GoogleTable table() {
+        return PROVIDER.get().getPrincipal().context().activeTable();
     }
 
     private volatile Principal principal;

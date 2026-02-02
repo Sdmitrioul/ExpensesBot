@@ -45,9 +45,8 @@ public class SaveStateHandler extends AbstractHandler {
         var context = StateContext.PROVIDER.get();
         var builder = context.getAttribute(EXPENSE_ATTRIBUTE_NAME, Expense.Builder.class);
         builder.currency(PrincipalContext.currency());
-        builder.groupId(PrincipalContext.group());
         context.clearAttributes();
-        var success = repository.insertExpense(builder.build());
+        var success = repository.insertExpense(builder.build(), PrincipalContext.PROVIDER.get().getPrincipal().context().activeTable());
         List<Effect<?>> effects = new ArrayList<>();
         if (!success) {
             effects.add(new MessageEffect("There was an error inserting expense!\nPlease try again later."));

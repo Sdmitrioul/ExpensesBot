@@ -1,10 +1,13 @@
 package com.dskroba.principals;
 
+import com.dskroba.telegram.TelegramId;
 import com.dskroba.type.Currency;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+
+import static com.dskroba.principals.Principal.NONEXISTING_TABLE;
 
 @Service
 public class PrincipalServiceImpl implements PrincipalService {
@@ -16,31 +19,26 @@ public class PrincipalServiceImpl implements PrincipalService {
     }
 
     @Override
-    public Principal authenticate(Principal principal) {
-        Principal savedPrincipal = principalRepository.getByTelegramId(principal.key().telegramId());
+    public Principal authenticate(TelegramId issuer) {
+        Principal savedPrincipal = principalRepository.getByTelegramId(issuer.telegramId());
         if (savedPrincipal == null) {
-            return savePrincipal(Principal.Builder
-                    .from(principal)
-                    .currency(Currency.EUR)
-                    .build());
+            Principal newPrincipal = Principal.builder(issuer)
+                    .context(List.of(), Currency.parseValue("EUR"), NONEXISTING_TABLE)
+                    .build();
+            return savePrincipal(newPrincipal);
         }
-        Principal combinedPrincipal = Principal.Builder.from(savedPrincipal)
-                .merge(principal)
-                .build();
-        if (combinedPrincipal.isDifferent(savedPrincipal)) {
-            return savePrincipal(combinedPrincipal);
+        if (issuer.hasSameMetadata(savedPrincipal.key())) {
+            Principal updatedPrincipal = savedPrincipal.toBuilder()
+                    .telegramId(issuer)
+                    .build();
+            return savePrincipal(updatedPrincipal);
         }
-        return combinedPrincipal;
+        return savedPrincipal;
     }
 
     @Override
     public Principal savePrincipal(Principal principal) {
         return principalRepository.savePrincipal(principal);
-    }
-
-    @Override
-    public boolean isAuthorized(Principal principal) {
-        return principal.isResolved();
     }
 
     @Override

@@ -17,8 +17,8 @@ public class TelegramAuthorizationService implements AuthorizationModule {
     }
 
     @Override
-    public Principal authorize(Principal issuer) throws AuthorizationException {
-        if (issuer == null || (!allowedUsers.contains(issuer.code()) && !principalService.isAuthorized(issuer))) {
+    public Principal authorize(TelegramId issuer) throws AuthorizationException {
+        if (issuer == null || !allowedUsers.contains(issuer.telegramHandle())) {
             throw new AuthorizationException("User is not authorized");
         }
         return principalService.authenticate(issuer);

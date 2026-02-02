@@ -8,7 +8,6 @@ import java.util.Arrays;
 import java.util.List;
 
 public enum ExpenseFieldSelectors implements FieldSelector<Expense> {
-    ID(LongExtractor.of(Expense::id)),
     TAG(EnumExtractor.of(Expense::expenseType)),
     AMOUNT(DoubleExtractor.of(Expense::amount)),
     CURRENCY(EnumExtractor.of(Expense::currency)),

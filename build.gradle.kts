@@ -17,11 +17,15 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter")
     implementation("org.springframework.boot:spring-boot-configuration-processor")
     implementation("org.springframework.boot:spring-boot-starter-validation")
-
-    implementation("com.zaxxer:HikariCP")
-    implementation("org.postgresql:postgresql")
-    implementation("org.liquibase:liquibase-core")
+    //RocksDB dependency
+    implementation("org.rocksdb:rocksdbjni:5.5.1")
+    //Telegram bot library
     implementation("com.github.pengrad:java-telegram-bot-api:7.11.0")
+    //Google libraries
+    implementation("com.google.api-client:google-api-client:2.0.0")
+    implementation("com.google.oauth-client:google-oauth-client-jetty:1.34.1")
+    implementation("com.google.apis:google-api-services-sheets:v4-rev20220927-2.0.0")
+
     implementation("com.google.code.gson:gson")
     implementation("io.vavr:vavr:0.10.7")
     implementation("org.apache.poi:poi-ooxml:5.4.0")

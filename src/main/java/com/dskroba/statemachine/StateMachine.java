@@ -9,6 +9,7 @@ import com.dskroba.statemachine.effects.Effect;
 import com.dskroba.statemachine.events.Event;
 import com.dskroba.statemachine.handlers.EventHandler;
 import com.dskroba.statemachine.handlers.EventHandlerRegistry;
+import com.dskroba.telegram.TelegramId;
 
 import java.util.List;
 
@@ -29,7 +30,7 @@ public abstract class StateMachine<I> {
     }
 
     public final void processEvent(I input) throws AuthorizationException {
-        Principal issuer = ioModule.provideIssuer(input);
+        TelegramId issuer = ioModule.provideIssuer(input);
         Principal authorizedIssuer = authorizationModule.authorize(issuer);
         PrincipalActor actor = actorManager.getActor(authorizedIssuer);
         actor.submit(() -> {

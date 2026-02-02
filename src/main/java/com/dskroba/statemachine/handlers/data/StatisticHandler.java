@@ -7,6 +7,7 @@ import com.dskroba.base.ClockProvider;
 import com.dskroba.base.exception.CustomException;
 import com.dskroba.expenses.Expense;
 import com.dskroba.expenses.ExpenseRepository;
+import com.dskroba.google.GoogleTable;
 import com.dskroba.services.PlottingService;
 import com.dskroba.statemachine.effects.Effect;
 import com.dskroba.statemachine.effects.FileEffect;
@@ -59,13 +60,13 @@ public class StatisticHandler extends AbstractHandler {
         if (!"Compare months".equalsIgnoreCase(message)) {
             return null;
         }
-        Long issuerId = PrincipalContext.issuerId();
+        var table = PrincipalContext.table();
         Currency currency = PrincipalContext.currency();
         Clock clock = ClockProvider.getClock();
         Timeframe monthTimeframe = MONTH.getTimeframe(clock);
-        var currentMonth = getGroupedExpenses(monthTimeframe, issuerId, currency);
+        var currentMonth = getGroupedExpenses(monthTimeframe, currency, table);
         Timeframe previousMonthTimeframe = PREVIOUS_MONTH.getTimeframe(clock);
-        var previousMonth = getGroupedExpenses(previousMonthTimeframe, issuerId, currency);
+        var previousMonth = getGroupedExpenses(previousMonthTimeframe, currency, table);
         if (currentMonth.isEmpty() && previousMonth.isEmpty()) {
             return sendEffect(new MessageEffect("No expenses found for the selected period."));
         }
@@ -89,9 +90,9 @@ public class StatisticHandler extends AbstractHandler {
 
     private List<Effect<?>> createAndSendGraphic(DateFilter dateFilter) {
         Timeframe timeframe = dateFilter.getTimeframe(ClockProvider.getClock());
-        Long groupId = PrincipalContext.group();
         Currency currency = PrincipalContext.currency();
-        Map<String, Double> groupedExpenses = getGroupedExpenses(timeframe, groupId, currency);
+        GoogleTable table = PrincipalContext.table();
+        Map<String, Double> groupedExpenses = getGroupedExpenses(timeframe, currency, table);
         if (groupedExpenses.isEmpty()) {
             return sendEffect(new MessageEffect("No expenses found for the selected period."));
         }
@@ -103,10 +104,8 @@ public class StatisticHandler extends AbstractHandler {
     }
 
     @NotNull
-    private Map<String, Double> getGroupedExpenses(Timeframe timeframe, Long groupId, Currency currency) {
-        return expenseRepository.getExpenses(timeframe,
-                        groupId,
-                        currency)
+    private Map<String, Double> getGroupedExpenses(Timeframe timeframe, Currency currency, GoogleTable table) {
+        return expenseRepository.getExpenses(timeframe, currency, table)
                 .stream()
                 .collect(Collectors.groupingBy(FP.compose(Expense::expenseType, Enum::name),
                         Collectors.summingDouble(Expense::amount)));
