@@ -18,9 +18,6 @@ public class ActorManagerImpl implements ActorManager {
 
     @Override
     public PrincipalActor getActor(Principal principal) throws AuthorizationException {
-        if (!principal.isResolved()) {
-            throw new AuthorizationException("Principal is not resolved! Principal: " + principal);
-        }
         Long id = principal.key().telegramId();
         PrincipalActor actor = actors.get(id);
         if (actor == null) {

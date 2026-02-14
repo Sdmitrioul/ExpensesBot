@@ -1,3 +1,12 @@
+server:
+  port: ${APP_PORT:8080}
+
+spring:
+  security:
+    user:
+      name: ${APP_USER}
+      password: ${APP_PASSWORD}
+
 telegram:
   bot:
     enabled: ${TELEGRAM_BOT_ENABLED:true}
@@ -11,6 +20,7 @@ application:
     application-name: ${GOOGLE_APPLICATION_NAME:SPEND_TRACKER}
     token-storage-path: ${GOOGLE_TOKEN_STORAGE:./data/token/}
     credentials-file: ${GOOGLE_CREDENTIALS_FILE:./data/secret/credentials.json}
+    redirect-uri: ${GOOGLE_REDIRECT_URI:http://localhost:8080/auth/google/callback}
   database:
     name: ${DATABASE_NAME}
     path: ${DATABASE_PATH}

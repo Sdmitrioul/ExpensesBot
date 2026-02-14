@@ -8,14 +8,18 @@ import com.dskroba.base.exception.CustomException;
 import com.dskroba.expenses.Expense;
 import com.dskroba.expenses.ExpenseCsvParser;
 import com.dskroba.expenses.ExpenseRepository;
+import com.dskroba.expenses.ExpenseType;
 import com.dskroba.statemachine.effects.Effect;
 import com.dskroba.statemachine.effects.FileEffect;
 import com.dskroba.statemachine.effects.MessageEffect;
+import com.dskroba.statemachine.effects.SelectEffect;
 import com.dskroba.statemachine.events.Event;
 import com.dskroba.statemachine.events.FileUploadEvent;
-import com.dskroba.statemachine.handlers.AbstractHandler;
-import com.dskroba.statemachine.state.CommandStates;
+import com.dskroba.statemachine.handlers.AbstractHandlerWithFactory;
 import com.dskroba.statemachine.state.State;
+import com.dskroba.statemachine.state.StateRecord;
+import com.dskroba.statemachine.state.descriptors.CommandStatesDescriptors;
+import com.dskroba.statemachine.state.descriptors.StateDescriptor;
 import com.dskroba.type.ContentType;
 import com.dskroba.type.FileData;
 import com.dskroba.type.FileWithMessage;
@@ -26,15 +30,25 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
-import static com.dskroba.statemachine.state.CommandStates.MENU;
+import static com.dskroba.statemachine.state.descriptors.CommandStatesDescriptors.IMPORT_DATA;
 
 @Component
-public class ImportDataHandler extends AbstractHandler {
+public class ImportDataHandler extends AbstractHandlerWithFactory {
+    private static final StateRecord IMPORT_DATA_STATE_INSTANCE = StateRecord.cancelable(CommandStatesDescriptors.IMPORT_DATA, SelectEffect.withCancelOption("""
+                    Please, send csv file with data.
+                    Delimiter is <,>.
+                    File must contains next columns: [amount, tag, date, description].
+                    File must contain header.
+                    Next columns are required: [amount, tag, date].
+                    Date must be in format: dd.MM.yyyy
+                    Tag column must be one of:\s""" + Arrays.stream(ExpenseType.values())
+                    .map(Enum::name)
+                    .collect(Collectors.joining(", ", "[", "]")),
+            List.of()));
+
     private final CsvParser<Expense.Builder> csvParser = new ExpenseCsvParser(",");
     private final ExpenseRepository repository;
 
@@ -44,16 +58,16 @@ public class ImportDataHandler extends AbstractHandler {
     }
 
     @Override
-    protected Optional<List<Effect<?>>> handleStateEvents(Event<?> event) {
+    protected Optional<Effect> handleStateEvents(Event event) {
         return Optional.of(event)
                 .filter(e -> e instanceof FileUploadEvent)
                 .map(e -> (FileUploadEvent) e)
                 .map(this::tryParseFile);
     }
 
-    private List<Effect<?>> tryParseFile(FileUploadEvent fileUploadEvent) {
+    private Effect tryParseFile(FileUploadEvent fileUploadEvent) {
         if (invalidFileFormat(fileUploadEvent)) {
-            return List.of(new MessageEffect("Unsupported file format!"), state().initialEffect());
+            return MessageEffect.of("Unsupported file format!").composite(StateContext.getCurrentState().initialEffect());
         }
         List<Expense.Builder> expenses = new ArrayList<>();
         List<IncorrectRowEntry> errors = new ArrayList<>();
@@ -61,20 +75,20 @@ public class ImportDataHandler extends AbstractHandler {
             String header = csvParser.parse(new ByteArrayInputStream(fileUploadEvent.payload().fileData().data()),
                     expense -> expenses.add(expense.value()),
                     errors::add);
-            List<Effect<?>> effects = new ArrayList<>();
+            Effect effect;
             if (!errors.isEmpty()) {
-                effects.add(convertErrorEntries(header, errors));
+                effect = convertErrorEntries(header, errors)
+                        .composite(saveExpenses(expenses));
+            } else {
+                effect = saveExpenses(expenses);
             }
-            effects.add(saveExpenses(expenses));
-            effects.add(MENU.initialEffect());
-            StateContext.PROVIDER.get().setState(MENU);
-            return effects;
+            return effect.composite(switchToMenu());
         } catch (CustomException e) {
-            return List.of(new MessageEffect(e.getMessage()), state().initialEffect());
+            return MessageEffect.of(e.getMessage()).composite(StateContext.getCurrentState().initialEffect());
         }
     }
 
-    private Effect<?> convertErrorEntries(String header, List<IncorrectRowEntry> errors) {
+    private Effect convertErrorEntries(String header, List<IncorrectRowEntry> errors) {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         try (OutputStreamWriter output = new OutputStreamWriter(outputStream)) {
             output.append("original_row_number,exception_cause,").append(header).append("\n");
@@ -98,7 +112,7 @@ public class ImportDataHandler extends AbstractHandler {
                         """));
     }
 
-    private Effect<?> saveExpenses(List<Expense.Builder> expenses) {
+    private Effect saveExpenses(List<Expense.Builder> expenses) {
         if (expenses.isEmpty()) {
             return new MessageEffect("No expenses were saved.");
         }
@@ -128,7 +142,12 @@ public class ImportDataHandler extends AbstractHandler {
     }
 
     @Override
-    public State state() {
-        return CommandStates.IMPORT_DATA;
+    public State createState() {
+        return IMPORT_DATA_STATE_INSTANCE;
+    }
+
+    @Override
+    public StateDescriptor stateDescriptor() {
+        return IMPORT_DATA;
     }
 }

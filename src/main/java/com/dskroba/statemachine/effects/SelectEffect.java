@@ -5,7 +5,7 @@ import com.dskroba.type.SelectOption;
 import java.util.ArrayList;
 import java.util.List;
 
-public record SelectEffect(SelectPayload payload) implements Effect<SelectEffect.SelectPayload> {
+public record SelectEffect(SelectPayload payload) implements Effect {
     public record SelectPayload(String message, List<SelectOption> selectOptionList) {
     }
 

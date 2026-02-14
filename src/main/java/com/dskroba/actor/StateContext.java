@@ -3,6 +3,7 @@ package com.dskroba.actor;
 import com.dskroba.statemachine.state.State;
 
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 public final class StateContext {
@@ -10,6 +11,14 @@ public final class StateContext {
 
     private volatile State state;
     private final ConcurrentHashMap<String, Object> attributes = new ConcurrentHashMap<>();
+
+    public static StateContext getContext() {
+        return PROVIDER.get();
+    }
+
+    public static State getCurrentState() {
+        return Optional.ofNullable(PROVIDER.get()).map(StateContext::getState).orElse(null);
+    }
 
     public StateContext(State state) {
         this.state = state;

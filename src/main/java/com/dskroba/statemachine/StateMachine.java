@@ -11,8 +11,6 @@ import com.dskroba.statemachine.handlers.EventHandler;
 import com.dskroba.statemachine.handlers.EventHandlerRegistry;
 import com.dskroba.telegram.TelegramId;
 
-import java.util.List;
-
 public abstract class StateMachine<I> {
     private final IOModule<I> ioModule;
     private final EventHandlerRegistry handlerRegistry;
@@ -35,11 +33,11 @@ public abstract class StateMachine<I> {
         PrincipalActor actor = actorManager.getActor(authorizedIssuer);
         actor.submit(() -> {
             try {
-                Event<?> parsedEvent = ioModule.parse(input, authorizedIssuer);
+                Event parsedEvent = ioModule.parse(input, authorizedIssuer);
                 StateContext stateContext = StateContext.PROVIDER.get();
                 EventHandler eventHandler = handlerRegistry.getHandler(stateContext.getState());
-                List<Effect<?>> effects = eventHandler.handleEvent(parsedEvent);
-                ioModule.handleEffects(effects);
+                Effect effects = eventHandler.handleEvent(parsedEvent);
+                ioModule.handleEffect(effects);
             } catch (Exception e) {
                 throw new JobException(e);
             }

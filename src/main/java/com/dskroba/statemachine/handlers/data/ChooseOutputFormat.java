@@ -12,11 +12,15 @@ import com.dskroba.expenses.ExpenseFieldSelectors;
 import com.dskroba.expenses.ExpenseRepository;
 import com.dskroba.statemachine.effects.Effect;
 import com.dskroba.statemachine.effects.FileEffect;
+import com.dskroba.statemachine.effects.SelectEffect;
 import com.dskroba.statemachine.events.Event;
-import com.dskroba.statemachine.handlers.AbstractHandler;
-import com.dskroba.statemachine.state.DataStates;
+import com.dskroba.statemachine.handlers.AbstractHandlerWithFactory;
 import com.dskroba.statemachine.state.State;
+import com.dskroba.statemachine.state.StateRecord;
+import com.dskroba.statemachine.state.descriptors.DataStatesDescriptors;
+import com.dskroba.statemachine.state.descriptors.StateDescriptor;
 import com.dskroba.type.ContentType;
+import com.dskroba.type.SelectOption;
 import com.dskroba.type.Timeframe;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -24,11 +28,15 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Optional;
 
-import static com.dskroba.statemachine.state.CommandStates.MENU;
-import static com.dskroba.statemachine.state.DataStates.TIMEFRAME_ATTRIBUTE_NAME;
+import static com.dskroba.statemachine.state.descriptors.DataStatesDescriptors.TIMEFRAME_ATTRIBUTE_NAME;
 
 @Component
-public class ChooseOutputFormat extends AbstractHandler {
+public class ChooseOutputFormat extends AbstractHandlerWithFactory {
+    private static final StateRecord CHOOSE_OUTPUT_FORMAT_STATE_INSTANCE = StateRecord.cancelable(
+            DataStatesDescriptors.CHOOSE_OUTPUT_FORMAT,
+            SelectEffect.withCancelOption("Select output file format", List.of(
+                    SelectOption.base("Csv"),
+                    SelectOption.base("Xlsx"))));
     private final CsvFormatter csvFormatter = new CsvFormatter(",");
     private final ExcelFormatter excelFormatter = new ExcelFormatter();
     private final ExpenseRepository expenseRepository;
@@ -39,13 +47,13 @@ public class ChooseOutputFormat extends AbstractHandler {
     }
 
     @Override
-    protected Optional<List<Effect<?>>> handleStateEvents(Event<?> event) {
+    protected Optional<Effect> handleStateEvents(Event event) {
         return handleMessageEvent(event)
                 .map(this::parseFormatter)
                 .map(this::exportData);
     }
 
-    private List<Effect<?>> exportData(Formatter formatter) {
+    private Effect exportData(Formatter formatter) {
         StateContext stateContext = StateContext.PROVIDER.get();
         Timeframe timeframe = stateContext.getAttribute(TIMEFRAME_ATTRIBUTE_NAME, Timeframe.class);
         stateContext.clearAttributes();
@@ -56,8 +64,7 @@ public class ChooseOutputFormat extends AbstractHandler {
         ContentType contentType = formatter.contentType();
         String filename = "exported_expenses_" + Utils.datePrinter(ClockProvider.getCurrentDate()) + contentType.filenameExtension();
         FileEffect effect = FileEffect.of("Exported expenses.", filename, contentType, data);
-        stateContext.setState(MENU);
-        return List.of(effect, MENU.initialEffect());
+        return effect.composite(switchToMenu());
     }
 
     private Formatter parseFormatter(String message) {
@@ -69,7 +76,12 @@ public class ChooseOutputFormat extends AbstractHandler {
     }
 
     @Override
-    public State state() {
-        return DataStates.CHOOSE_OUTPUT_FORMAT;
+    public State createState() {
+        return CHOOSE_OUTPUT_FORMAT_STATE_INSTANCE;
+    }
+
+    @Override
+    public StateDescriptor stateDescriptor() {
+        return DataStatesDescriptors.CHOOSE_OUTPUT_FORMAT;
     }
 }

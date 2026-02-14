@@ -1,9 +1,9 @@
 package com.dskroba.expenses;
 
 import com.dskroba.google.GoogleTable;
+import com.dskroba.services.GoogleSheetsService;
 import com.dskroba.type.Currency;
 import com.dskroba.type.Timeframe;
-import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.model.AppendValuesResponse;
 import com.google.api.services.sheets.v4.model.ValueRange;
 import org.apache.logging.log4j.LogManager;
@@ -15,15 +15,16 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ExpenseRepositoryImpl implements ExpenseRepository {
     private static final Logger log = LogManager.getLogger(ExpenseRepositoryImpl.class);
 
-    private final Sheets service;
+    private final GoogleSheetsService service;
 
     @Autowired
-    public ExpenseRepositoryImpl(Sheets service) {
+    public ExpenseRepositoryImpl(GoogleSheetsService service) {
         this.service = service;
     }
 
@@ -37,7 +38,7 @@ public class ExpenseRepositoryImpl implements ExpenseRepository {
                         expense.expenseType().name(),
                         expense.amount(),
                         expense.currency().name(),
-                        expense.description(),
+                        Optional.ofNullable(expense.description()).orElse(""),
                         expense.issuer(),
                         Timestamp.from(expense.date().toInstant()).toString()
                 ));
@@ -45,9 +46,10 @@ public class ExpenseRepositoryImpl implements ExpenseRepository {
 
             ValueRange body = new ValueRange().setValues(rows);
 
-            AppendValuesResponse response = service.spreadsheets()
+            AppendValuesResponse response = service.getSheets()
+                    .spreadsheets()
                     .values()
-                    .append(table.spreadsheetId(), table.range(), body)
+                    .append(table.documentId(), table.range(), body)
                     .setValueInputOption("USER_ENTERED")
                     .setInsertDataOption("INSERT_ROWS")
                     .execute();
@@ -71,9 +73,10 @@ public class ExpenseRepositoryImpl implements ExpenseRepository {
     ) {
         // Sheets API has no server-side filtering → read & filter
         try {
-            var response = service.spreadsheets()
+            var response = service.getSheets()
+                    .spreadsheets()
                     .values()
-                    .get(table.spreadsheetId(), table.range())
+                    .get(table.documentId(), table.range())
                     .execute();
 
             List<Expense> result = new ArrayList<>();
@@ -110,9 +113,5 @@ public class ExpenseRepositoryImpl implements ExpenseRepository {
             log.error("Error while querying expenses from Google Sheet", e);
             return List.of();
         }
-    }
-
-    public static Sheets create(String credentialsPath, String appName) {
-
     }
 }

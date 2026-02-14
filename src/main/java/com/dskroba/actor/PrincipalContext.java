@@ -4,6 +4,7 @@ import com.dskroba.google.GoogleTable;
 import com.dskroba.principals.Principal;
 import com.dskroba.type.Currency;
 
+import java.util.List;
 import java.util.Objects;
 
 public final class PrincipalContext {
@@ -17,8 +18,16 @@ public final class PrincipalContext {
         return PROVIDER.get().getPrincipal().context().activeCurrency();
     }
 
+    public static boolean isInitiated() {
+        return !PROVIDER.get().getPrincipal().context().tables().isEmpty();
+    }
+
     public static GoogleTable table() {
         return PROVIDER.get().getPrincipal().context().activeTable();
+    }
+
+    public static List<GoogleTable> getAllTables() {
+        return PROVIDER.get().getPrincipal().context().tables();
     }
 
     private volatile Principal principal;

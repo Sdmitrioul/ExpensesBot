@@ -85,7 +85,7 @@ public abstract class AbstractCsvParser<T> implements CsvParser<T> {
         if (line.isEmpty() && result.isEmpty()) {
             result.add("");
         }
-        return result.stream().map(String::trim).map(String::toLowerCase).toList();
+        return result.stream().map(String::trim).toList();
     }
 
     private List<String> parseSchema(BufferedReader bufferedReader) {

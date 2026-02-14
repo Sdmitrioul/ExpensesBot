@@ -1,120 +1,136 @@
 package com.dskroba.statemachine.handlers;
 
+import com.dskroba.actor.PrincipalContext;
 import com.dskroba.actor.StateContext;
 import com.dskroba.statemachine.effects.Effect;
 import com.dskroba.statemachine.effects.MessageEffect;
 import com.dskroba.statemachine.events.CommandEvent;
 import com.dskroba.statemachine.events.Event;
 import com.dskroba.statemachine.events.MessageEvent;
-import com.dskroba.statemachine.state.CommandStates;
 import com.dskroba.statemachine.state.State;
+import com.dskroba.statemachine.state.descriptors.CommandStatesDescriptors;
+import com.dskroba.statemachine.state.descriptors.StateDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.Locale;
+import java.util.Optional;
+import java.util.Set;
 
-public abstract class AbstractHandler implements EventHandler {
+import static com.dskroba.statemachine.state.descriptors.CommandStatesDescriptors.*;
+
+public abstract class AbstractHandler implements EventHandler, EventHandlerRegistryAware {
     protected static final Logger log = LoggerFactory.getLogger(AbstractHandler.class);
-    private static final Set<String> INITIAL_COMMANDS = Set.of("start", "help");
+    private static final String START_COMMAND = "start";
+    private static final Set<String> INITIAL_COMMANDS = Set.of(START_COMMAND, "help");
+    private EventHandlerRegistry registry;
 
     @Override
-    public List<Effect<?>> handleEvent(Event<?> event) {
+    public Effect handleEvent(Event event) {
         return tryHandleCommand(event)
                 .or(() -> tryHandleCancelRequest(event))
                 .or(() -> tryHandleStateEvents(event))
                 .orElseGet(() -> unrecognizedEventHandler(event));
     }
 
-    private Optional<List<Effect<?>>> tryHandleCommand(Event<?> event) {
+    @Override
+    public void setRegistry(EventHandlerRegistry registry) {
+        this.registry = registry;
+    }
+
+    private Optional<Effect> tryHandleCommand(Event event) {
         if (!(event instanceof CommandEvent commandEvent)) {
             return Optional.empty();
         }
         return Optional.of(handleCommand(commandEvent));
     }
 
-    private Optional<List<Effect<?>>> tryHandleCancelRequest(Event<?> event) {
-        if (!isCancelRequest(event) || (state() != null && !state().isCancellable())) {
+    private Optional<Effect> tryHandleCancelRequest(Event event) {
+        State state = StateContext.getCurrentState();
+        if (!isCancelRequest(event) || (state != null && !state.isCancellable())) {
             return Optional.empty();
         }
-        return Optional.of(handleChangeOfState(CommandStates.MENU));
+        return Optional.of(switchToMenu());
     }
 
-    private Optional<List<Effect<?>>> tryHandleStateEvents(Event<?> event) {
+    private Optional<Effect> tryHandleStateEvents(Event event) {
         return handleStateEvents(event);
     }
 
-    private static boolean isCancelRequest(Event<?> event) {
+    private static boolean isCancelRequest(Event event) {
         return event instanceof MessageEvent messageEvent
                 && "cancel".equalsIgnoreCase(messageEvent.payload());
     }
 
-    private List<Effect<?>> unrecognizedEventHandler(Event<?> event) {
+    private Effect unrecognizedEventHandler(Event event) {
         log.warn("Unrecognized event: {}", event);
-        List<Effect<?>> effects = new ArrayList<>();
-        effects.add(new MessageEffect("Unrecognized option.\nPlease, try again."));
-        effects.add(state().initialEffect());
-        return effects;
+        return MessageEffect.of("Unrecognized option.\nPlease, try again.")
+                .composite(StateContext.getContext().getState().initialEffect());
     }
 
-    private List<Effect<?>> handleCommand(CommandEvent commandEvent) {
+    private Effect handleCommand(CommandEvent commandEvent) {
         String command = commandEvent.payload();
 
+        if (START_COMMAND.equalsIgnoreCase(command) && !PrincipalContext.isInitiated()) {
+            return startEffects();
+        }
+
         if (INITIAL_COMMANDS.contains(command.toLowerCase(Locale.ROOT))) {
-            return createInitialCommandResponse();
+            return MessageEffect.of("This bot provides interface to track expenses in google sheet.")
+                    .composite(switchToMenu());
         }
 
         return parseAndHandleStateCommand(command);
     }
 
-    private List<Effect<?>> createInitialCommandResponse() {
-        return List.of(
-                new MessageEffect("This bot provides instruments to track expenses."),
-                CommandStates.MENU.initialEffect()
-        );
+    private Effect startEffects() {
+        return moveToState(PROVIDE_LINK_TO_THE_DOCUMENT);
     }
 
-    private List<Effect<?>> parseAndHandleStateCommand(String command) {
+    private Effect parseAndHandleStateCommand(String command) {
         try {
-            CommandStates state = CommandStates.valueOf(command.toUpperCase(Locale.ROOT));
-            return handleChangeOfState(state);
+            CommandStatesDescriptors state = valueOf(command.toUpperCase(Locale.ROOT));
+            return moveToState(state);
         } catch (IllegalArgumentException e) {
             log.warn("Unknown command received: {}", command);
-            return createErrorResponse(
-                    "Unknown command: " + command,
-                    CommandStates.MENU.initialEffect()
-            );
+            return MessageEffect.of("Unknown command: " + command)
+                    .composite(switchToMenu());
         }
     }
 
-    protected List<Effect<?>> handleChangeOfState(State state) {
-        StateContext stateContext = StateContext.PROVIDER.get();
-        boolean hadAttributes = stateContext.attributeExists();
-
-        stateContext.setState(state);
-        stateContext.clearAttributes();
-
-        return buildStateTransitionEffects(state, hadAttributes);
-    }
-
-    protected Optional<String> handleMessageEvent(Event<?> event) {
+    protected Optional<String> handleMessageEvent(Event event) {
         return Optional.ofNullable(event)
                 .filter(e -> e instanceof MessageEvent)
                 .map(e -> (MessageEvent) e)
                 .map(MessageEvent::payload);
     }
 
-    private List<Effect<?>> buildStateTransitionEffects(State state, boolean hadPreviousData) {
-        List<Effect<?>> effects = new ArrayList<>();
-        if (hadPreviousData) {
-            effects.add(new MessageEffect("Previously provided data will be deleted."));
+    protected Effect switchToMenu() {
+        return handleChangeOfState(MENU, true);
+    }
+
+    protected Effect switchToState(StateDescriptor stateDescriptor) {
+        return handleChangeOfState(stateDescriptor, true);
+    }
+
+    protected Effect moveToState(StateDescriptor stateDescriptor) {
+        return handleChangeOfState(stateDescriptor, false);
+    }
+
+    private Effect handleChangeOfState(StateDescriptor stateDescriptor, boolean clearContext) {
+        State nextState = registry.getFactory(stateDescriptor).createState();
+
+        StateContext stateContext = StateContext.getContext();
+        if (clearContext) {
+            stateContext.clearAttributes();
         }
-        effects.add(state.initialEffect());
-        return effects;
+        stateContext.setState(nextState);
+        return buildStateTransitionEffects(nextState);
     }
 
-    protected List<Effect<?>> createErrorResponse(String message, Effect<?> fallbackEffect) {
-        return List.of(new MessageEffect(message), fallbackEffect);
+    private Effect buildStateTransitionEffects(State state) {
+        return state.initialEffect();
     }
 
-    protected abstract Optional<List<Effect<?>>> handleStateEvents(Event<?> event);
+    protected abstract Optional<Effect> handleStateEvents(Event event);
 }

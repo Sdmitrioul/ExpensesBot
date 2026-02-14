@@ -2,8 +2,6 @@ package com.dskroba.statemachine.events;
 
 import com.dskroba.principals.Principal;
 
-public sealed interface Event<T> permits FileUploadEvent, MessageEvent, CommandEvent {
-    T payload();
-
+public sealed interface Event permits FileUploadEvent, MessageEvent, CommandEvent {
     Principal issuer();
 }

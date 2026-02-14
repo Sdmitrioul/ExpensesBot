@@ -2,9 +2,6 @@ package com.dskroba.configurations;
 
 import com.dskroba.base.exception.InitializationException;
 import com.dskroba.configurations.properties.GoogleProperties;
-import com.google.api.client.auth.oauth2.Credential;
-import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
-import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
 import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
@@ -12,7 +9,6 @@ import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.client.util.store.FileDataStoreFactory;
-import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.SheetsScopes;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -35,30 +31,17 @@ public class GoogleConfiguration {
     private static final List<String> SCOPES = Collections.singletonList(SheetsScopes.SPREADSHEETS);
 
     @Bean
-    public Sheets sheetsService(GoogleProperties properties) {
+    public NetHttpTransport netHttpTransport() {
         try {
-            final NetHttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
-            return new Sheets.Builder(httpTransport, JSON_FACTORY, getCredentials(httpTransport, properties))
-                    .setApplicationName(properties.applicationName())
-                    .build();
+            return GoogleNetHttpTransport.newTrustedTransport();
         } catch (GeneralSecurityException | IOException e) {
-            log.error("Unable to create google sheet service.", e);
-            throw new InitializationException("Unable to create google sheet service.", e);
+            log.error("Unable to create HTTP transport", e);
+            throw new InitializationException("Unable to create HTTP transport", e);
         }
     }
 
-    private static Credential getCredentials(final NetHttpTransport transport, GoogleProperties properties) {
-        try {
-            GoogleAuthorizationCodeFlow flow = getGoogleAuthorizationCodeFlow(transport, properties);
-            LocalServerReceiver receiver = new LocalServerReceiver.Builder().setPort(8888).build();
-            return new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
-        } catch (IOException e) {
-            log.error("Error during authorizing user for installed scope", e);
-            throw new InitializationException("Error during authorizing user for installed scope", e);
-        }
-    }
-
-    private static GoogleAuthorizationCodeFlow getGoogleAuthorizationCodeFlow(
+    @Bean
+    public GoogleAuthorizationCodeFlow googleAuthorizationCodeFlow(
             NetHttpTransport transport,
             GoogleProperties properties) {
         try {
@@ -68,9 +51,14 @@ public class GoogleConfiguration {
                     .setAccessType("offline")
                     .build();
         } catch (IOException e) {
-            log.error("Problem setting token storage", e);
-            throw new InitializationException("Problem setting token storage", e);
+            log.error("Problem setting up authorization flow", e);
+            throw new InitializationException("Problem setting up authorization flow", e);
         }
+    }
+
+    @Bean
+    public JsonFactory jsonFactory() {
+        return JSON_FACTORY;
     }
 
     private static FileDataStoreFactory tokenStorage(String path) {
@@ -94,5 +82,4 @@ public class GoogleConfiguration {
             throw new InitializationException("Problem reading credentials file: " + credentialsFile, e);
         }
     }
-
 }

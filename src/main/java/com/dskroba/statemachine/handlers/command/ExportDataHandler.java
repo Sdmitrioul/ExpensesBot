@@ -3,34 +3,45 @@ package com.dskroba.statemachine.handlers.command;
 import com.dskroba.actor.StateContext;
 import com.dskroba.base.ClockProvider;
 import com.dskroba.statemachine.effects.Effect;
+import com.dskroba.statemachine.effects.SelectEffect;
 import com.dskroba.statemachine.events.Event;
-import com.dskroba.statemachine.handlers.AbstractHandler;
-import com.dskroba.statemachine.state.CommandStates;
+import com.dskroba.statemachine.handlers.AbstractHandlerWithFactory;
 import com.dskroba.statemachine.state.State;
+import com.dskroba.statemachine.state.StateRecord;
+import com.dskroba.statemachine.state.descriptors.CommandStatesDescriptors;
+import com.dskroba.statemachine.state.descriptors.StateDescriptor;
+import com.dskroba.type.SelectOption;
 import com.dskroba.type.Timeframe;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Optional;
 
-import static com.dskroba.statemachine.state.DataStates.CHOOSE_OUTPUT_FORMAT;
-import static com.dskroba.statemachine.state.DataStates.TIMEFRAME_ATTRIBUTE_NAME;
+import static com.dskroba.statemachine.state.descriptors.CommandStatesDescriptors.EXPORT_DATA;
+import static com.dskroba.statemachine.state.descriptors.DataStatesDescriptors.CHOOSE_OUTPUT_FORMAT;
+import static com.dskroba.statemachine.state.descriptors.DataStatesDescriptors.TIMEFRAME_ATTRIBUTE_NAME;
 import static com.dskroba.type.DateFilter.*;
 
 @Component
-public class ExportDataHandler extends AbstractHandler {
+public class ExportDataHandler extends AbstractHandlerWithFactory {
+    private static final StateRecord EXPORT_DATA_STATE_INSTANCE = StateRecord.cancelable(
+            CommandStatesDescriptors.EXPORT_DATA,
+            SelectEffect.withCancelOption("Select historical period.", List.of(
+                    SelectOption.base("Current Month"),
+                    SelectOption.base("Previous Month"),
+                    SelectOption.base("All history"))));
+
     @Override
-    protected Optional<List<Effect<?>>> handleStateEvents(Event<?> event) {
+    protected Optional<Effect> handleStateEvents(Event event) {
         return handleMessageEvent(event)
                 .map(this::parseDateInterval)
                 .map(this::setTimeframeAndChangeState);
     }
 
-    private List<Effect<?>> setTimeframeAndChangeState(Timeframe timeframe) {
+    private Effect setTimeframeAndChangeState(Timeframe timeframe) {
         StateContext stateContext = StateContext.PROVIDER.get();
         stateContext.setAttribute(TIMEFRAME_ATTRIBUTE_NAME, timeframe);
-        stateContext.setState(CHOOSE_OUTPUT_FORMAT);
-        return List.of(CHOOSE_OUTPUT_FORMAT.initialEffect());
+        return moveToState(CHOOSE_OUTPUT_FORMAT);
     }
 
     private Timeframe parseDateInterval(String message) {
@@ -44,7 +55,12 @@ public class ExportDataHandler extends AbstractHandler {
     }
 
     @Override
-    public State state() {
-        return CommandStates.EXPORT_DATA;
+    public State createState() {
+        return EXPORT_DATA_STATE_INSTANCE;
+    }
+
+    @Override
+    public StateDescriptor stateDescriptor() {
+        return EXPORT_DATA;
     }
 }

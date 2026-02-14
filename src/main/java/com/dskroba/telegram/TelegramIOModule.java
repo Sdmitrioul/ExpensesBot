@@ -4,10 +4,7 @@ import com.dskroba.actor.PrincipalContext;
 import com.dskroba.base.exception.CustomException;
 import com.dskroba.principals.Principal;
 import com.dskroba.statemachine.IOModule;
-import com.dskroba.statemachine.effects.Effect;
-import com.dskroba.statemachine.effects.FileEffect;
-import com.dskroba.statemachine.effects.MessageEffect;
-import com.dskroba.statemachine.effects.SelectEffect;
+import com.dskroba.statemachine.effects.*;
 import com.dskroba.statemachine.events.CommandEvent;
 import com.dskroba.statemachine.events.Event;
 import com.dskroba.statemachine.events.FileUploadEvent;
@@ -51,7 +48,7 @@ public class TelegramIOModule implements IOModule<Update> {
     }
 
     @Override
-    public Event<?> parse(Update input, Principal issuer) {
+    public Event parse(Update input, Principal issuer) {
         String message = TelegramUtils.text(input);
         if (message != null && message.startsWith("/")) {
             return new CommandEvent(message.substring(1), issuer);
@@ -103,16 +100,17 @@ public class TelegramIOModule implements IOModule<Update> {
     }
 
     @Override
-    public void handleEffects(List<Effect<?>> effects) {
-        effects.forEach(this::handleEffect);
-    }
-
-    private void handleEffect(Effect<?> effect) {
+    public void handleEffect(Effect effect) {
         switch (effect) {
             case MessageEffect messageEffect -> handleEffect(messageEffect);
             case FileEffect fileEffect -> handleEffect(fileEffect);
             case SelectEffect selectEffect -> handleEffect(selectEffect);
+            case CompositeEffect compositeEffect -> handleEffect(compositeEffect);
         }
+    }
+
+    private void handleEffect(CompositeEffect effect) {
+        effect.payload().forEach(this::handleEffect);
     }
 
     private void handleEffect(MessageEffect effect) {

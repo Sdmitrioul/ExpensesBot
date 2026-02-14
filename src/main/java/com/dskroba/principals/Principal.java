@@ -4,13 +4,14 @@ import com.dskroba.google.GoogleTable;
 import com.dskroba.telegram.TelegramId;
 import com.dskroba.type.Currency;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public record Principal(
         TelegramId key,
-        PrincipalContext context
+        PrincipalData context
 ) {
-    public static final Long NONEXISTING_TABLE = -1L;
+    public static final String NONEXISTING_TABLE = "-1L";
 
     public Long id() {
         return key.telegramId();
@@ -36,7 +37,7 @@ public record Principal(
 
     public static class Builder {
         private TelegramId key;
-        private PrincipalContext context;
+        private PrincipalData context;
 
         public Builder telegramId(TelegramId telegramId) {
             this.key = telegramId;
@@ -48,18 +49,29 @@ public record Principal(
             return this;
         }
 
-        public Builder context(PrincipalContext context) {
+        public Builder context(PrincipalData context) {
             this.context = context;
             return this;
         }
 
         public Builder context(List<GoogleTable> tables, Currency activeCurrency, String activeTableId) {
-            this.context = new PrincipalContext(tables, activeCurrency, activeTableId);
+            this.context = new PrincipalData(tables, activeCurrency, activeTableId);
             return this;
         }
 
         public Builder tables(List<GoogleTable> tables) {
-            this.context = new PrincipalContext(
+            this.context = new PrincipalData(
+                    tables,
+                    context != null ? context.activeCurrency() : null,
+                    context != null ? context.activeTableId() : null
+            );
+            return this;
+        }
+
+        public Builder table(GoogleTable table) {
+            List<GoogleTable> tables = new ArrayList<>(context != null ? context.tables() : List.of());
+            tables.add(table);
+            this.context = new PrincipalData(
                     tables,
                     context != null ? context.activeCurrency() : null,
                     context != null ? context.activeTableId() : null
@@ -68,7 +80,7 @@ public record Principal(
         }
 
         public Builder activeCurrency(Currency currency) {
-            this.context = new PrincipalContext(
+            this.context = new PrincipalData(
                     context != null ? context.tables() : null,
                     currency,
                     context != null ? context.activeTableId() : null
@@ -77,7 +89,7 @@ public record Principal(
         }
 
         public Builder activeTableId(String tableId) {
-            this.context = new PrincipalContext(
+            this.context = new PrincipalData(
                     context != null ? context.tables() : null,
                     context != null ? context.activeCurrency() : null,
                     tableId

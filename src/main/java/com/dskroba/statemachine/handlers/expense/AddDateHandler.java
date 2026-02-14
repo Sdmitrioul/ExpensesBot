@@ -6,9 +6,9 @@ import com.dskroba.expenses.Expense;
 import com.dskroba.expenses.ExpenseRepository;
 import com.dskroba.expenses.ExpenseUtils;
 import com.dskroba.statemachine.effects.Effect;
+import com.dskroba.statemachine.effects.SelectEffect;
 import com.dskroba.statemachine.events.Event;
-import com.dskroba.statemachine.state.ExpenseStates;
-import com.dskroba.statemachine.state.State;
+import com.dskroba.statemachine.state.StateRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -16,18 +16,22 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
-import static com.dskroba.statemachine.state.ExpenseStates.ADD_DESCRIPTION;
-import static com.dskroba.statemachine.state.ExpenseStates.EXPENSE_ATTRIBUTE_NAME;
+import static com.dskroba.statemachine.state.descriptors.ExpensesStatesDescriptors.*;
+import static com.dskroba.type.SelectOption.SAVE_OPTION;
+import static com.dskroba.type.SelectOption.fullRowOption;
 
 @Component
 public class AddDateHandler extends SaveStateHandler {
     @Autowired
     protected AddDateHandler(ExpenseRepository repository) {
-        super(repository);
+        super(repository, StateRecord.cancelable(ADD_DATE, SelectEffect.withCancelOption(
+                """
+                        Add custom date, if needed
+                        Format: dd.MM.YYYY""", List.of(fullRowOption("Today", 10), SAVE_OPTION))));
     }
 
     @Override
-    protected Optional<List<Effect<?>>> tryUpdateExpense(Event<?> event) {
+    protected Optional<Effect> tryUpdateExpense(Event event) {
         return handleMessageEvent(event)
                 .flatMap(ExpenseUtils::parseDate)
                 .map(this::processDate)
@@ -35,27 +39,20 @@ public class AddDateHandler extends SaveStateHandler {
                         .map(this::processTodayOption));
     }
 
-    private List<Effect<?>> processTodayOption(String message) {
+    private Effect processTodayOption(String message) {
         if ("today".equalsIgnoreCase(message)) {
             StateContext stateContext = StateContext.PROVIDER.get();
             stateContext.getAttribute(EXPENSE_ATTRIBUTE_NAME, Expense.Builder.class)
                     .date(ClockProvider.getCurrentDate());
-            stateContext.setState(ADD_DESCRIPTION);
-            return List.of(ADD_DESCRIPTION.initialEffect());
+            return moveToState(ADD_DESCRIPTION);
         }
         return null;
     }
 
-    private List<Effect<?>> processDate(Date date) {
+    private Effect processDate(Date date) {
         StateContext stateContext = StateContext.PROVIDER.get();
         stateContext.getAttribute(EXPENSE_ATTRIBUTE_NAME, Expense.Builder.class)
                 .date(date);
-        stateContext.setState(ADD_DESCRIPTION);
-        return List.of(ADD_DESCRIPTION.initialEffect());
-    }
-
-    @Override
-    public State state() {
-        return ExpenseStates.ADD_DATE;
+        return moveToState(ADD_DESCRIPTION);
     }
 }

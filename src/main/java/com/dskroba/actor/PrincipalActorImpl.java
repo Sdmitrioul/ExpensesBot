@@ -7,6 +7,7 @@ import org.apache.logging.log4j.Logger;
 import java.util.concurrent.*;
 
 import static com.dskroba.base.Utils.shutdownExecutorService;
+import static com.dskroba.statemachine.state.descriptors.CommandStatesDescriptors.MENU;
 
 public class PrincipalActorImpl implements PrincipalActor {
     private static final Logger log = LogManager.getLogger(PrincipalActorImpl.class);

@@ -1,6 +1,7 @@
 plugins {
     java
     id("org.springframework.boot") version "3.5.0"
+    id("io.spring.dependency-management") version "1.1.5"
 }
 
 java {
@@ -12,13 +13,14 @@ repositories {
 }
 
 dependencies {
-    implementation(platform("org.springframework.boot:spring-boot-dependencies:3.5.0"))
     // Spring Boot starters
-    implementation("org.springframework.boot:spring-boot-starter")
-    implementation("org.springframework.boot:spring-boot-configuration-processor")
+    implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-validation")
+    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
+
     //RocksDB dependency
-    implementation("org.rocksdb:rocksdbjni:5.5.1")
+    implementation("org.rocksdb:rocksdbjni:9.8.4")
     //Telegram bot library
     implementation("com.github.pengrad:java-telegram-bot-api:7.11.0")
     //Google libraries

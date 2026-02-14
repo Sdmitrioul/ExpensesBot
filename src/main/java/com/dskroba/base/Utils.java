@@ -5,6 +5,8 @@ import com.dskroba.type.Currency;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
@@ -13,11 +15,12 @@ import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public final class Utils {
-    private static final Logger LOGGER = LogManager.getLogger(Utils.class);
+    private static final Logger log = LogManager.getLogger(Utils.class);
 
     public static final SimpleDateFormat SIMPLE_DATE_FORMAT = new SimpleDateFormat("dd.MM.yyyy");
     public static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss a");
@@ -26,7 +29,7 @@ public final class Utils {
         try {
             return new URI(basePath).resolve(additional);
         } catch (URISyntaxException e) {
-            LOGGER.error("Failed to build URI from path: {}", basePath, e);
+            log.error("Failed to build URI from path: {}", basePath, e);
             throw new CustomException(e);
         }
     }
@@ -40,6 +43,25 @@ public final class Utils {
             return "";
         }
         return filename.substring(lastDotIndex + 1);
+    }
+
+    public static Optional<byte[]> readResourceFile(Class<?> clazz, String filename) {
+        if (filename == null) {
+            log.error("Filename is null.");
+            return Optional.empty();
+        }
+        try (var stream = clazz.getResourceAsStream(filename)) {
+            if (stream == null) {
+                log.error("Filename does not exist with name {}", filename);
+                return Optional.empty();
+            }
+            return Optional.of(stream.readAllBytes());
+        } catch (FileNotFoundException e) {
+            log.error("Unable to find resource: {}", filename);
+        } catch (IOException e) {
+            log.error("Exception reading resource {}", filename, e);
+        }
+        return Optional.empty();
     }
 
     public static String doublePrinter(Double value) {

@@ -12,6 +12,8 @@ public record GoogleProperties(
         @NotBlank
         String tokenStoragePath,
         @NotBlank
-        String applicationName
+        String applicationName,
+        @NotBlank
+        String redirectUri
 ) {
 }

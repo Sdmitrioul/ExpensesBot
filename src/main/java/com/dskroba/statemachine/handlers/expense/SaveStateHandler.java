@@ -6,59 +6,71 @@ import com.dskroba.expenses.Expense;
 import com.dskroba.expenses.ExpenseRepository;
 import com.dskroba.statemachine.effects.Effect;
 import com.dskroba.statemachine.effects.MessageEffect;
+import com.dskroba.statemachine.effects.SelectEffect;
 import com.dskroba.statemachine.events.Event;
-import com.dskroba.statemachine.handlers.AbstractHandler;
-import com.dskroba.statemachine.state.ExpenseStates;
+import com.dskroba.statemachine.handlers.AbstractHandlerWithFactory;
 import com.dskroba.statemachine.state.State;
+import com.dskroba.statemachine.state.StateRecord;
+import com.dskroba.statemachine.state.descriptors.StateDescriptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static com.dskroba.statemachine.state.ExpenseStates.CHOOSE_TAG;
-import static com.dskroba.statemachine.state.ExpenseStates.EXPENSE_ATTRIBUTE_NAME;
+import static com.dskroba.statemachine.state.descriptors.ExpensesStatesDescriptors.*;
+import static com.dskroba.type.SelectOption.SAVE_OPTION;
 
 @Component
-public class SaveStateHandler extends AbstractHandler {
+public class SaveStateHandler extends AbstractHandlerWithFactory {
     private final ExpenseRepository repository;
+    private final State stateInstance;
 
     @Autowired
     public SaveStateHandler(ExpenseRepository repository) {
+        this(repository, StateRecord.cancelable(
+                SAVE_EXPENSE,
+                SelectEffect.withCancelOption("Save or Discard?", List.of(SAVE_OPTION))));
+    }
+
+    SaveStateHandler(ExpenseRepository repository, State stateInstance) {
         this.repository = repository;
+        this.stateInstance = stateInstance;
     }
 
     @Override
-    protected final Optional<List<Effect<?>>> handleStateEvents(Event<?> event) {
+    protected final Optional<Effect> handleStateEvents(Event event) {
         return handleMessageEvent(event)
                 .filter("save"::equalsIgnoreCase)
-                .map(_ -> this.saveExpense())
+                .flatMap(_ -> this.saveExpense())
                 .or(() -> tryUpdateExpense(event));
     }
 
-    protected Optional<List<Effect<?>>> tryUpdateExpense(Event<?> event) {
+    protected Optional<Effect> tryUpdateExpense(Event event) {
         return Optional.empty();
     }
 
-    private List<Effect<?>> saveExpense() {
+    private Optional<Effect> saveExpense() {
         var context = StateContext.PROVIDER.get();
         var builder = context.getAttribute(EXPENSE_ATTRIBUTE_NAME, Expense.Builder.class);
         builder.currency(PrincipalContext.currency());
-        context.clearAttributes();
         var success = repository.insertExpense(builder.build(), PrincipalContext.PROVIDER.get().getPrincipal().context().activeTable());
-        List<Effect<?>> effects = new ArrayList<>();
         if (!success) {
-            effects.add(new MessageEffect("There was an error inserting expense!\nPlease try again later."));
+            return Optional.of(MessageEffect.of("""
+                    There was an error inserting expense!
+                    Please try again later.""").composite(switchToState(CHOOSE_TAG)));
         }
-        context.setState(CHOOSE_TAG);
-        effects.add(CHOOSE_TAG.initialEffect());
-        return effects;
+        return Optional.of(switchToState(CHOOSE_TAG));
     }
 
 
     @Override
-    public State state() {
-        return ExpenseStates.SAVE_EXPENSE;
+    public State createState() {
+        return stateInstance;
+    }
+
+    @Override
+    public StateDescriptor stateDescriptor() {
+        return stateInstance.descriptor();
     }
 }

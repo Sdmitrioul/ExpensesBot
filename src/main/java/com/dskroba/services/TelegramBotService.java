@@ -3,7 +3,7 @@ package com.dskroba.services;
 import com.dskroba.base.bean.AbstractBean;
 import com.dskroba.statemachine.AuthorizationException;
 import com.dskroba.statemachine.StateMachine;
-import com.dskroba.statemachine.state.CommandStates;
+import com.dskroba.statemachine.state.descriptors.CommandStatesDescriptors;
 import com.dskroba.telegram.TelegramExceptionHandler;
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.UpdatesListener;
@@ -37,7 +37,7 @@ public class TelegramBotService extends AbstractBean implements UpdatesListener 
 
     @Override
     public void startImpl() {
-        BotCommand[] commands = Arrays.stream(CommandStates.values())
+        BotCommand[] commands = Arrays.stream(CommandStatesDescriptors.values())
                 .map(commandState -> new BotCommand(commandState.code(), commandState.getDescription()))
                 .toArray(BotCommand[]::new);
         bot.execute(new SetMyCommands(commands));
