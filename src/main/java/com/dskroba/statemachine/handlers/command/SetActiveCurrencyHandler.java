@@ -1,13 +1,14 @@
 package com.dskroba.statemachine.handlers.command;
 
-import com.dskroba.actor.PrincipalContext;
+import com.dskroba.actor.Context;
+import com.dskroba.principals.Principal;
 import com.dskroba.principals.PrincipalService;
 import com.dskroba.statemachine.effects.Effect;
 import com.dskroba.statemachine.effects.SelectEffect;
 import com.dskroba.statemachine.events.Event;
 import com.dskroba.statemachine.handlers.AbstractHandlerWithFactory;
+import com.dskroba.statemachine.state.ContextAccessor;
 import com.dskroba.statemachine.state.State;
-import com.dskroba.statemachine.state.StateRecord;
 import com.dskroba.statemachine.state.descriptors.StateDescriptor;
 import com.dskroba.type.Currency;
 import com.dskroba.type.SelectOption;
@@ -37,11 +38,11 @@ public class SetActiveCurrencyHandler extends AbstractHandlerWithFactory {
     }
 
     private Effect processCurrency(Currency currency) {
-        var context = PrincipalContext.PROVIDER.get();
-        var updatedPrincipal = context.getPrincipal().toBuilder()
+        Context context = ContextAccessor.context();
+        Principal updatedPrincipal = context.getPrincipal().toBuilder()
                 .activeCurrency(currency)
                 .build();
-        context.setPrincipal(principalService.savePrincipal(updatedPrincipal));
+        context.setPrincipal(updatedPrincipal);
         return switchToMenu();
     }
 
@@ -59,7 +60,7 @@ public class SetActiveCurrencyHandler extends AbstractHandlerWithFactory {
     @Override
     public State createState() {
         List<SelectOption> options = new ArrayList<>();
-        Currency activeCurrency = PrincipalContext.currency();
+        Currency activeCurrency = ContextAccessor.principalCurrency();
         for (Currency currency : Currency.values()) {
             String value = currency.name();
             if (activeCurrency == currency) {
@@ -67,7 +68,7 @@ public class SetActiveCurrencyHandler extends AbstractHandlerWithFactory {
             }
             options.add(SelectOption.base(value));
         }
-        return StateRecord.cancelable(
+        return State.cancelable(
                 SET_ACTIVE_CURRENCY,
                 SelectEffect.withCancelOption("Select active currency.", options));
     }

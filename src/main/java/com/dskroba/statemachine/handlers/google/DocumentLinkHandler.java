@@ -1,7 +1,5 @@
 package com.dskroba.statemachine.handlers.google;
 
-import com.dskroba.actor.PrincipalContext;
-import com.dskroba.actor.StateContext;
 import com.dskroba.base.exception.CustomException;
 import com.dskroba.services.GoogleSheetFacade;
 import com.dskroba.statemachine.effects.Effect;
@@ -9,8 +7,8 @@ import com.dskroba.statemachine.effects.FileEffect;
 import com.dskroba.statemachine.effects.MessageEffect;
 import com.dskroba.statemachine.events.Event;
 import com.dskroba.statemachine.handlers.AbstractHandlerWithFactory;
+import com.dskroba.statemachine.state.ContextAccessor;
 import com.dskroba.statemachine.state.State;
-import com.dskroba.statemachine.state.StateRecord;
 import com.dskroba.statemachine.state.descriptors.StateDescriptor;
 import com.dskroba.type.ContentType;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,8 +40,8 @@ public class DocumentLinkHandler extends AbstractHandlerWithFactory {
     }
 
     private Optional<Effect> saveLink(String link) {
-        StateContext.getContext().setAttribute(SHEET_DOCUMENT_LINK_ATTRIBUTE, link);
-        return Optional.of(moveToState(PROVIDE_SHEET_NAME));
+        return Optional.of(moveToState(PROVIDE_SHEET_NAME,
+                stateContext -> stateContext.setAttribute(SHEET_DOCUMENT_LINK_ATTRIBUTE, link)));
     }
 
     private Optional<Effect> checkDocumentIsReachable(String link) {
@@ -55,7 +53,7 @@ public class DocumentLinkHandler extends AbstractHandlerWithFactory {
 
     @Override
     public State createState() {
-        return new StateRecord(PROVIDE_LINK_TO_THE_DOCUMENT, FileEffect.of("""
+        return new State(PROVIDE_LINK_TO_THE_DOCUMENT, FileEffect.of("""
                         Please, provide link to your excel file in google drive.
                         File must be shared with editor rights.
                         Image may at help.
@@ -64,7 +62,7 @@ public class DocumentLinkHandler extends AbstractHandlerWithFactory {
                 ContentType.PNG,
                 readResourceFile(DocumentLinkHandler.class, "/img/" + SHARE_INSTRUCTIONS_PNG)
                         .orElseThrow(() -> new CustomException("No instruction image."))
-        ), PrincipalContext.isInitiated());
+        ), ContextAccessor.isPrincipalInitiated());
     }
 
     @Override

@@ -1,7 +1,5 @@
 package com.dskroba.statemachine.handlers.command;
 
-import com.dskroba.actor.PrincipalContext;
-import com.dskroba.actor.StateContext;
 import com.dskroba.base.csv.CsvParser;
 import com.dskroba.base.csv.IncorrectRowEntry;
 import com.dskroba.base.exception.CustomException;
@@ -16,11 +14,12 @@ import com.dskroba.statemachine.effects.SelectEffect;
 import com.dskroba.statemachine.events.Event;
 import com.dskroba.statemachine.events.FileUploadEvent;
 import com.dskroba.statemachine.handlers.AbstractHandlerWithFactory;
+import com.dskroba.statemachine.state.ContextAccessor;
 import com.dskroba.statemachine.state.State;
-import com.dskroba.statemachine.state.StateRecord;
 import com.dskroba.statemachine.state.descriptors.CommandStatesDescriptors;
 import com.dskroba.statemachine.state.descriptors.StateDescriptor;
 import com.dskroba.type.ContentType;
+import com.dskroba.type.Currency;
 import com.dskroba.type.FileData;
 import com.dskroba.type.FileWithMessage;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +36,7 @@ import static com.dskroba.statemachine.state.descriptors.CommandStatesDescriptor
 
 @Component
 public class ImportDataHandler extends AbstractHandlerWithFactory {
-    private static final StateRecord IMPORT_DATA_STATE_INSTANCE = StateRecord.cancelable(CommandStatesDescriptors.IMPORT_DATA, SelectEffect.withCancelOption("""
+    private static final State IMPORT_DATA_STATE_INSTANCE = State.cancelable(CommandStatesDescriptors.IMPORT_DATA, SelectEffect.withCancelOption("""
                     Please, send csv file with data.
                     Delimiter is <,>.
                     File must contains next columns: [amount, tag, date, description].
@@ -67,7 +66,7 @@ public class ImportDataHandler extends AbstractHandlerWithFactory {
 
     private Effect tryParseFile(FileUploadEvent fileUploadEvent) {
         if (invalidFileFormat(fileUploadEvent)) {
-            return MessageEffect.of("Unsupported file format!").composite(StateContext.getCurrentState().initialEffect());
+            return MessageEffect.of("Unsupported file format!").composite(ContextAccessor.getState().initialEffect());
         }
         List<Expense.Builder> expenses = new ArrayList<>();
         List<IncorrectRowEntry> errors = new ArrayList<>();
@@ -84,7 +83,7 @@ public class ImportDataHandler extends AbstractHandlerWithFactory {
             }
             return effect.composite(switchToMenu());
         } catch (CustomException e) {
-            return MessageEffect.of(e.getMessage()).composite(StateContext.getCurrentState().initialEffect());
+            return MessageEffect.of(e.getMessage()).composite(ContextAccessor.getState().initialEffect());
         }
     }
 
@@ -116,18 +115,19 @@ public class ImportDataHandler extends AbstractHandlerWithFactory {
         if (expenses.isEmpty()) {
             return new MessageEffect("No expenses were saved.");
         }
-        var principal = PrincipalContext.PROVIDER.get().getPrincipal();
+        String issuer = ContextAccessor.principalTelegramHandle();
+        Currency principalCurrency = ContextAccessor.principalCurrency();
         try {
             repository.insertExpense(expenses.stream()
-                    .map(expense -> expense.issuerId(principal.key().telegramId()))
+                    .map(expense -> expense.issuer(issuer))
                     .map(expense -> {
                         if (expense.currency() == null) {
-                            return expense.currency(principal.context().activeCurrency());
+                            return expense.currency(principalCurrency);
                         }
                         return expense;
                     })
                     .map(Expense.Builder::build)
-                    .toList(), PrincipalContext.table());
+                    .toList(), ContextAccessor.principalStorage());
         } catch (CustomException e) {
             log.error("Exception during expenses saving.", e);
             return new MessageEffect("""

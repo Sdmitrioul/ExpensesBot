@@ -1,14 +1,12 @@
 package com.dskroba.statemachine.handlers.google;
 
-import com.dskroba.actor.PrincipalContext;
-import com.dskroba.actor.StateContext;
 import com.dskroba.google.GoogleTable;
 import com.dskroba.statemachine.effects.Effect;
 import com.dskroba.statemachine.effects.MessageEffect;
 import com.dskroba.statemachine.events.Event;
 import com.dskroba.statemachine.handlers.AbstractHandlerWithFactory;
+import com.dskroba.statemachine.state.ContextAccessor;
 import com.dskroba.statemachine.state.State;
-import com.dskroba.statemachine.state.StateRecord;
 import com.dskroba.statemachine.state.descriptors.StateDescriptor;
 import org.springframework.stereotype.Component;
 
@@ -28,12 +26,13 @@ public class SheetNameHandler extends AbstractHandlerWithFactory {
     }
 
     private Optional<Effect> handlePutInCash(String name) {
-        StateContext.getContext().setAttribute(SHEET_NAME_ATTRIBUTE, name);
-        return Optional.of(moveToState(SAVE_GOOGLE_SHEET));
+        return Optional.of(moveToState(SAVE_GOOGLE_SHEET,
+                state -> state.setAttribute(SHEET_NAME_ATTRIBUTE, name)));
     }
 
     private Optional<Effect> handleDuplicationName(String name) {
-        if (PrincipalContext.getAllTables()
+        if (ContextAccessor
+                .principalDocuments()
                 .stream()
                 .map(GoogleTable::sheetName)
                 .anyMatch(sheetName -> Objects.equals(sheetName, name))) {
@@ -44,9 +43,9 @@ public class SheetNameHandler extends AbstractHandlerWithFactory {
 
     @Override
     public State createState() {
-        return new StateRecord(PROVIDE_SHEET_NAME,
+        return new State(PROVIDE_SHEET_NAME,
                 new MessageEffect("Please, provide name for sheet to use."),
-                PrincipalContext.isInitiated());
+                ContextAccessor.isPrincipalInitiated());
     }
 
     @Override

@@ -1,7 +1,6 @@
 package com.dskroba.statemachine.handlers.data;
 
 import com.dskroba.FP;
-import com.dskroba.actor.PrincipalContext;
 import com.dskroba.base.ClockProvider;
 import com.dskroba.base.exception.CustomException;
 import com.dskroba.expenses.Expense;
@@ -14,8 +13,8 @@ import com.dskroba.statemachine.effects.MessageEffect;
 import com.dskroba.statemachine.effects.SelectEffect;
 import com.dskroba.statemachine.events.Event;
 import com.dskroba.statemachine.handlers.AbstractHandlerWithFactory;
+import com.dskroba.statemachine.state.ContextAccessor;
 import com.dskroba.statemachine.state.State;
-import com.dskroba.statemachine.state.StateRecord;
 import com.dskroba.statemachine.state.descriptors.StateDescriptor;
 import com.dskroba.statemachine.state.descriptors.StatisticStatesDescriptors;
 import com.dskroba.type.Currency;
@@ -35,13 +34,12 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static com.dskroba.FP.prepend;
 import static com.dskroba.type.ContentType.PNG;
 import static com.dskroba.type.DateFilter.*;
 
 @Component
 public class StatisticHandler extends AbstractHandlerWithFactory {
-    private static final StateRecord CANCELABLE_STATE_INSTANCE = StateRecord.cancelable(
+    private static final State CANCELABLE_STATE_INSTANCE = State.cancelable(
             StatisticStatesDescriptors.STATISTIC_STATE,
             SelectEffect.of(List.of(
                     SelectOption.base("Day", 30),
@@ -72,8 +70,8 @@ public class StatisticHandler extends AbstractHandlerWithFactory {
         if (!"Compare months".equalsIgnoreCase(message)) {
             return null;
         }
-        var table = PrincipalContext.table();
-        Currency currency = PrincipalContext.currency();
+        GoogleTable table = ContextAccessor.principalStorage();
+        Currency currency = ContextAccessor.principalCurrency();
         Clock clock = ClockProvider.getClock();
         Timeframe monthTimeframe = MONTH.getTimeframe(clock);
         var currentMonth = getGroupedExpenses(monthTimeframe, currency, table);
@@ -101,8 +99,8 @@ public class StatisticHandler extends AbstractHandlerWithFactory {
 
     private Effect createAndSendGraphic(DateFilter dateFilter) {
         Timeframe timeframe = dateFilter.getTimeframe(ClockProvider.getClock());
-        Currency currency = PrincipalContext.currency();
-        GoogleTable table = PrincipalContext.table();
+        GoogleTable table = ContextAccessor.principalStorage();
+        Currency currency = ContextAccessor.principalCurrency();
         Map<String, Double> groupedExpenses = getGroupedExpenses(timeframe, currency, table);
         if (groupedExpenses.isEmpty()) {
             return sendEffectAndSwitchToMenu(new MessageEffect("No expenses found for the selected period."));

@@ -3,7 +3,6 @@ package com.dskroba.actor;
 import com.dskroba.principals.Principal;
 import com.dskroba.statemachine.AuthorizationException;
 
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
@@ -11,9 +10,10 @@ import java.util.concurrent.locks.ReentrantLock;
 public class ActorManagerImpl implements ActorManager {
     private final Map<Long, PrincipalActor> actors = new ConcurrentHashMap<>();
     private final ReentrantLock lock = new ReentrantLock();
+    private final ContextProvider contextProvider;
 
-    public ActorManagerImpl(List<Principal> principals) {
-        principals.forEach(this::creatActor);
+    public ActorManagerImpl(ContextProvider contextProvider) {
+        this.contextProvider = contextProvider;
     }
 
     @Override
@@ -32,7 +32,7 @@ public class ActorManagerImpl implements ActorManager {
             Long id = principal.key().telegramId();
             PrincipalActor actor = actors.get(id);
             if (actor == null) {
-                actor = new PrincipalActorImpl(principal);
+                actor = new PrincipalActorImpl(contextProvider.getContext(principal));
                 actors.put(id, actor);
             }
             return actor;

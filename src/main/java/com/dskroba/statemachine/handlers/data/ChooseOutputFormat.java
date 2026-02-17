@@ -1,7 +1,6 @@
 package com.dskroba.statemachine.handlers.data;
 
-import com.dskroba.actor.PrincipalContext;
-import com.dskroba.actor.StateContext;
+import com.dskroba.actor.Context;
 import com.dskroba.base.ClockProvider;
 import com.dskroba.base.Utils;
 import com.dskroba.base.formatter.CsvFormatter;
@@ -15,8 +14,8 @@ import com.dskroba.statemachine.effects.FileEffect;
 import com.dskroba.statemachine.effects.SelectEffect;
 import com.dskroba.statemachine.events.Event;
 import com.dskroba.statemachine.handlers.AbstractHandlerWithFactory;
+import com.dskroba.statemachine.state.ContextAccessor;
 import com.dskroba.statemachine.state.State;
-import com.dskroba.statemachine.state.StateRecord;
 import com.dskroba.statemachine.state.descriptors.DataStatesDescriptors;
 import com.dskroba.statemachine.state.descriptors.StateDescriptor;
 import com.dskroba.type.ContentType;
@@ -32,7 +31,7 @@ import static com.dskroba.statemachine.state.descriptors.DataStatesDescriptors.T
 
 @Component
 public class ChooseOutputFormat extends AbstractHandlerWithFactory {
-    private static final StateRecord CHOOSE_OUTPUT_FORMAT_STATE_INSTANCE = StateRecord.cancelable(
+    private static final State CHOOSE_OUTPUT_FORMAT_STATE_INSTANCE = State.cancelable(
             DataStatesDescriptors.CHOOSE_OUTPUT_FORMAT,
             SelectEffect.withCancelOption("Select output file format", List.of(
                     SelectOption.base("Csv"),
@@ -54,12 +53,11 @@ public class ChooseOutputFormat extends AbstractHandlerWithFactory {
     }
 
     private Effect exportData(Formatter formatter) {
-        StateContext stateContext = StateContext.PROVIDER.get();
+        Context stateContext = ContextAccessor.context();
         Timeframe timeframe = stateContext.getAttribute(TIMEFRAME_ATTRIBUTE_NAME, Timeframe.class);
-        stateContext.clearAttributes();
         List<Expense> expenses = expenseRepository.getExpenses(timeframe,
-                PrincipalContext.currency(),
-                PrincipalContext.table());
+                ContextAccessor.principalCurrency(),
+                ContextAccessor.principalStorage());
         byte[] data = formatter.formatOutput(ExpenseFieldSelectors.BASIC_SELECTORS, expenses);
         ContentType contentType = formatter.contentType();
         String filename = "exported_expenses_" + Utils.datePrinter(ClockProvider.getCurrentDate()) + contentType.filenameExtension();

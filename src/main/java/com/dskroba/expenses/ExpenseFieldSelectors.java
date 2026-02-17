@@ -13,7 +13,7 @@ public enum ExpenseFieldSelectors implements FieldSelector<Expense> {
     CURRENCY(EnumExtractor.of(Expense::currency)),
     DATE(DateExtractor.of(Expense::date)),
     DESCRIPTION(StringExtractor.of(Expense::description)),
-    ISSUER(LongExtractor.of(Expense::issuer));
+    ISSUER(StringExtractor.of(Expense::issuer));
 
     public static final List<ExpenseFieldSelectors> ALL_FIELDS_SELECTOR =
             Arrays.stream(ExpenseFieldSelectors.values()).toList();

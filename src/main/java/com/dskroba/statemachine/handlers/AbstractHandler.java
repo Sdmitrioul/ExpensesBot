@@ -1,13 +1,13 @@
 package com.dskroba.statemachine.handlers;
 
-import com.dskroba.actor.PrincipalContext;
-import com.dskroba.actor.StateContext;
 import com.dskroba.statemachine.effects.Effect;
 import com.dskroba.statemachine.effects.MessageEffect;
 import com.dskroba.statemachine.events.CommandEvent;
 import com.dskroba.statemachine.events.Event;
 import com.dskroba.statemachine.events.MessageEvent;
+import com.dskroba.statemachine.state.ContextAccessor;
 import com.dskroba.statemachine.state.State;
+import com.dskroba.statemachine.state.StateContext;
 import com.dskroba.statemachine.state.descriptors.CommandStatesDescriptors;
 import com.dskroba.statemachine.state.descriptors.StateDescriptor;
 import org.slf4j.Logger;
@@ -16,7 +16,9 @@ import org.slf4j.LoggerFactory;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
 
+import static com.dskroba.FP.constant;
 import static com.dskroba.statemachine.state.descriptors.CommandStatesDescriptors.*;
 
 public abstract class AbstractHandler implements EventHandler, EventHandlerRegistryAware {
@@ -46,7 +48,7 @@ public abstract class AbstractHandler implements EventHandler, EventHandlerRegis
     }
 
     private Optional<Effect> tryHandleCancelRequest(Event event) {
-        State state = StateContext.getCurrentState();
+        State state = ContextAccessor.getState();
         if (!isCancelRequest(event) || (state != null && !state.isCancellable())) {
             return Optional.empty();
         }
@@ -65,13 +67,13 @@ public abstract class AbstractHandler implements EventHandler, EventHandlerRegis
     private Effect unrecognizedEventHandler(Event event) {
         log.warn("Unrecognized event: {}", event);
         return MessageEffect.of("Unrecognized option.\nPlease, try again.")
-                .composite(StateContext.getContext().getState().initialEffect());
+                .composite(ContextAccessor.getState().initialEffect());
     }
 
     private Effect handleCommand(CommandEvent commandEvent) {
         String command = commandEvent.payload();
 
-        if (START_COMMAND.equalsIgnoreCase(command) && !PrincipalContext.isInitiated()) {
+        if (START_COMMAND.equalsIgnoreCase(command) && !ContextAccessor.isPrincipalInitiated()) {
             return startEffects();
         }
 
@@ -106,25 +108,35 @@ public abstract class AbstractHandler implements EventHandler, EventHandlerRegis
     }
 
     protected Effect switchToMenu() {
-        return handleChangeOfState(MENU, true);
+        return handleChangeOfState(MENU, constant(StateContext.class), true);
+    }
+
+    protected Effect switchToMenu(Consumer<StateContext> updater) {
+        return handleChangeOfState(MENU, updater, true);
     }
 
     protected Effect switchToState(StateDescriptor stateDescriptor) {
-        return handleChangeOfState(stateDescriptor, true);
+        return handleChangeOfState(stateDescriptor, constant(StateContext.class), true);
     }
 
     protected Effect moveToState(StateDescriptor stateDescriptor) {
-        return handleChangeOfState(stateDescriptor, false);
+        return handleChangeOfState(stateDescriptor, constant(StateContext.class), false);
     }
 
-    private Effect handleChangeOfState(StateDescriptor stateDescriptor, boolean clearContext) {
+    protected Effect moveToState(StateDescriptor stateDescriptor, Consumer<StateContext> updater) {
+        return handleChangeOfState(stateDescriptor, updater, false);
+    }
+
+    private Effect handleChangeOfState(StateDescriptor stateDescriptor, Consumer<StateContext> updater, boolean clearContext) {
         State nextState = registry.getFactory(stateDescriptor).createState();
 
-        StateContext stateContext = StateContext.getContext();
-        if (clearContext) {
-            stateContext.clearAttributes();
-        }
-        stateContext.setState(nextState);
+        ContextAccessor.context().updateStateContext(stateContext -> {
+            updater.accept(stateContext);
+            if (clearContext) {
+                stateContext.clearAttributes();
+            }
+            stateContext.setState(nextState);
+        });
         return buildStateTransitionEffects(nextState);
     }
 

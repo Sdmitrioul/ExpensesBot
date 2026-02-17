@@ -2,6 +2,7 @@ package com.dskroba.configurations;
 
 import com.dskroba.actor.ActorManager;
 import com.dskroba.actor.ActorManagerImpl;
+import com.dskroba.actor.ContextProvider;
 import com.dskroba.base.ClockProvider;
 import com.dskroba.base.exception.InitializationException;
 import com.dskroba.configurations.properties.ApplicationProperties;
@@ -13,7 +14,6 @@ import java.time.Clock;
 import java.time.DateTimeException;
 import java.time.ZoneId;
 import java.time.zone.ZoneRulesException;
-import java.util.List;
 
 @Configuration
 @EnableConfigurationProperties({ApplicationProperties.class})
@@ -34,7 +34,7 @@ public class ApplicationConfiguration {
     }
 
     @Bean
-    public ActorManager actorManager() {
-        return new ActorManagerImpl(List.of());
+    public ActorManager actorManager(ContextProvider contextProvider) {
+        return new ActorManagerImpl(contextProvider);
     }
 }

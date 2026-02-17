@@ -1,13 +1,11 @@
 package com.dskroba.statemachine.handlers.command;
 
-import com.dskroba.actor.StateContext;
 import com.dskroba.base.ClockProvider;
 import com.dskroba.statemachine.effects.Effect;
 import com.dskroba.statemachine.effects.SelectEffect;
 import com.dskroba.statemachine.events.Event;
 import com.dskroba.statemachine.handlers.AbstractHandlerWithFactory;
 import com.dskroba.statemachine.state.State;
-import com.dskroba.statemachine.state.StateRecord;
 import com.dskroba.statemachine.state.descriptors.CommandStatesDescriptors;
 import com.dskroba.statemachine.state.descriptors.StateDescriptor;
 import com.dskroba.type.SelectOption;
@@ -24,7 +22,7 @@ import static com.dskroba.type.DateFilter.*;
 
 @Component
 public class ExportDataHandler extends AbstractHandlerWithFactory {
-    private static final StateRecord EXPORT_DATA_STATE_INSTANCE = StateRecord.cancelable(
+    private static final State EXPORT_DATA_STATE_INSTANCE = State.cancelable(
             CommandStatesDescriptors.EXPORT_DATA,
             SelectEffect.withCancelOption("Select historical period.", List.of(
                     SelectOption.base("Current Month"),
@@ -39,9 +37,8 @@ public class ExportDataHandler extends AbstractHandlerWithFactory {
     }
 
     private Effect setTimeframeAndChangeState(Timeframe timeframe) {
-        StateContext stateContext = StateContext.PROVIDER.get();
-        stateContext.setAttribute(TIMEFRAME_ATTRIBUTE_NAME, timeframe);
-        return moveToState(CHOOSE_OUTPUT_FORMAT);
+        return moveToState(CHOOSE_OUTPUT_FORMAT,
+                state -> state.setAttribute(TIMEFRAME_ATTRIBUTE_NAME, timeframe));
     }
 
     private Timeframe parseDateInterval(String message) {

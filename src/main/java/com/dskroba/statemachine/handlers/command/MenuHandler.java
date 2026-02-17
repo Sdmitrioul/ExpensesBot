@@ -3,7 +3,6 @@ package com.dskroba.statemachine.handlers.command;
 import com.dskroba.statemachine.effects.SelectEffect;
 import com.dskroba.statemachine.handlers.StateSelector;
 import com.dskroba.statemachine.state.State;
-import com.dskroba.statemachine.state.StateRecord;
 import com.dskroba.statemachine.state.descriptors.*;
 import com.dskroba.type.SelectOption;
 import org.springframework.stereotype.Component;
@@ -19,7 +18,7 @@ public class MenuHandler extends StateSelector {
             "data", DataStatesDescriptors.CHOOSE_OPERATION
     );
 
-    private static final StateRecord MENU_STATE_INSTANCE = StateRecord.requiring(
+    public static final State MENU_STATE_INSTANCE = State.requiring(
             CommandStatesDescriptors.MENU,
             SelectEffect.of("Choose menu operation", List.of(
                     SelectOption.base("Expenses"),

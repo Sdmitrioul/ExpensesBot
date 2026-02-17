@@ -1,12 +1,12 @@
 package com.dskroba.statemachine.handlers.expense;
 
-import com.dskroba.actor.StateContext;
+import com.dskroba.actor.Context;
 import com.dskroba.expenses.Expense;
 import com.dskroba.expenses.ExpenseRepository;
 import com.dskroba.statemachine.effects.Effect;
 import com.dskroba.statemachine.effects.SelectEffect;
 import com.dskroba.statemachine.events.Event;
-import com.dskroba.statemachine.state.StateRecord;
+import com.dskroba.statemachine.state.State;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -20,7 +20,7 @@ import static com.dskroba.type.SelectOption.SAVE_OPTION;
 public class AddDescriptionHandler extends SaveStateHandler {
     @Autowired
     public AddDescriptionHandler(ExpenseRepository repository) {
-        super(repository, StateRecord.cancelable(ADD_DESCRIPTION,
+        super(repository, State.cancelable(ADD_DESCRIPTION,
                 SelectEffect.withCancelOption("Add description, if needed", List.of(SAVE_OPTION))));
     }
 
@@ -31,7 +31,7 @@ public class AddDescriptionHandler extends SaveStateHandler {
     }
 
     private Effect processDescription(String description) {
-        var stateContext = StateContext.PROVIDER.get();
+        var stateContext = Context.PROVIDER.get();
         stateContext.getAttribute(EXPENSE_ATTRIBUTE_NAME, Expense.Builder.class)
                 .description(description);
         return moveToState(SAVE_EXPENSE);

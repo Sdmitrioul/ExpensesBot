@@ -1,27 +1,22 @@
-package com.dskroba.actor;
+package com.dskroba.statemachine.state;
 
-import com.dskroba.statemachine.state.State;
-
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 
-public final class StateContext {
-    public static final ScopedValue<StateContext> PROVIDER = ScopedValue.newInstance();
-
+public class StateContext {
+    private final Long principalId;
     private volatile State state;
-    private final ConcurrentHashMap<String, Object> attributes = new ConcurrentHashMap<>();
+    private final Map<String, Object> attributes;
 
-    public static StateContext getContext() {
-        return PROVIDER.get();
+    public StateContext(Long principalId) {
+        this(principalId, null, new HashMap<>());
     }
 
-    public static State getCurrentState() {
-        return Optional.ofNullable(PROVIDER.get()).map(StateContext::getState).orElse(null);
-    }
-
-    public StateContext(State state) {
+    private StateContext(Long principalId, State state, Map<String, Object> attributes) {
+        this.principalId = principalId;
         this.state = state;
+        this.attributes = attributes;
     }
 
     public State getState() {
@@ -40,23 +35,27 @@ public final class StateContext {
         attributes.put(key, value);
     }
 
-    public boolean attributeExists() {
-        return !attributes.isEmpty();
-    }
-
     public void clearAttributes() {
         attributes.clear();
+    }
+
+    public Long getPrincipalId() {
+        return principalId;
+    }
+
+    public StateContext cloneInstance() {
+        return new StateContext(principalId, state, Map.copyOf(attributes));
     }
 
     @Override
     public boolean equals(Object o) {
         if (!(o instanceof StateContext that)) return false;
-        return state == that.state;
+        return Objects.equals(principalId, that.principalId) && Objects.equals(state, that.state) && Objects.equals(attributes, that.attributes);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(state);
+        return Objects.hash(principalId, state, attributes);
     }
 
     @Override

@@ -3,7 +3,6 @@ package com.dskroba.statemachine.handlers.data;
 import com.dskroba.statemachine.effects.SelectEffect;
 import com.dskroba.statemachine.handlers.StateSelector;
 import com.dskroba.statemachine.state.State;
-import com.dskroba.statemachine.state.StateRecord;
 import com.dskroba.statemachine.state.descriptors.CommandStatesDescriptors;
 import com.dskroba.statemachine.state.descriptors.DataStatesDescriptors;
 import com.dskroba.statemachine.state.descriptors.StateDescriptor;
@@ -21,7 +20,7 @@ public class ChooseOperationHandler extends StateSelector {
             "import", CommandStatesDescriptors.IMPORT_DATA,
             "export", CommandStatesDescriptors.EXPORT_DATA
     );
-    private static final StateRecord CHOOSE_OPERATION_STATE_INSTANCE = StateRecord.cancelable(
+    private static final State CHOOSE_OPERATION_STATE_INSTANCE = State.cancelable(
             DataStatesDescriptors.CHOOSE_OPERATION,
             SelectEffect.withCancelOption("Choose command", List.of(
                     SelectOption.base("Import"),

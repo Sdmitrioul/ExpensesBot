@@ -2,6 +2,7 @@ package com.dskroba;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 public final class FP {
@@ -14,6 +15,11 @@ public final class FP {
         result.add(element);
         result.addAll(list);
         return result;
+    }
+
+    public static <T> Consumer<T> constant(Class<T> clazz) {
+        return (T input) -> {
+        };
     }
 
     private FP() {

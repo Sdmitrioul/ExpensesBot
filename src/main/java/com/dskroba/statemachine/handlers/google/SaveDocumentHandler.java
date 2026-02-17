@@ -1,20 +1,17 @@
 package com.dskroba.statemachine.handlers.google;
 
-import com.dskroba.actor.PrincipalContext;
-import com.dskroba.actor.StateContext;
 import com.dskroba.google.GoogleTable;
 import com.dskroba.principals.Principal;
-import com.dskroba.principals.PrincipalService;
+import com.dskroba.statemachine.effects.CompositeEffect;
 import com.dskroba.statemachine.effects.Effect;
 import com.dskroba.statemachine.effects.MessageEffect;
 import com.dskroba.statemachine.effects.SelectEffect;
 import com.dskroba.statemachine.events.Event;
 import com.dskroba.statemachine.handlers.AbstractHandlerWithFactory;
+import com.dskroba.statemachine.state.ContextAccessor;
 import com.dskroba.statemachine.state.State;
-import com.dskroba.statemachine.state.StateRecord;
 import com.dskroba.statemachine.state.descriptors.StateDescriptor;
 import com.dskroba.type.SelectOption;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -27,13 +24,6 @@ public class SaveDocumentHandler extends AbstractHandlerWithFactory {
     private static final String CHANGE_SHEET_NAME = "Change sheet name";
     private static final List<SelectOption> ACKNOWLEDGMENT_OPTIONS = List.of(SelectOption.SAVE_OPTION, SelectOption.base(CHANGE_SHEET_NAME));
 
-    private final PrincipalService principalService;
-
-    @Autowired
-    public SaveDocumentHandler(PrincipalService principalService) {
-        this.principalService = principalService;
-    }
-
     @Override
     protected Optional<Effect> handleStateEvents(Event event) {
         return handleMessageEvent(event)
@@ -45,22 +35,25 @@ public class SaveDocumentHandler extends AbstractHandlerWithFactory {
             return moveToState(PROVIDE_SHEET_NAME);
         }
         if ("save".equalsIgnoreCase(command)) {
-            GoogleTable table = GoogleTable.fromLink(getDocumentLink(), getSheetName());
-            var principal = PrincipalContext.PROVIDER.get().getPrincipal();
-            var updatedPrincipal = Principal.builder(principal).table(table).activeTableId(table.documentId()).build();
-            updatedPrincipal = principalService.savePrincipal(updatedPrincipal);
-            PrincipalContext.PROVIDER.get().setPrincipal(updatedPrincipal);
-            return MessageEffect.of("Document saved as current storage!").composite(switchToMenu());
+            return saveGoogleDocument();
         }
         return null;
     }
 
+    private CompositeEffect saveGoogleDocument() {
+        GoogleTable table = GoogleTable.fromLink(getDocumentLink(), getSheetName());
+        Principal principal = ContextAccessor.principal();
+        Principal updatedPrincipal = Principal.builder(principal).table(table).activeTableId(table.documentId()).build();
+        ContextAccessor.context().setPrincipal(updatedPrincipal);
+        return MessageEffect.of("Document saved as current storage!").composite(switchToMenu());
+    }
+
     private static String getDocumentLink() {
-        return StateContext.getContext().getAttribute(SHEET_DOCUMENT_LINK_ATTRIBUTE, String.class);
+        return ContextAccessor.context().getAttribute(SHEET_DOCUMENT_LINK_ATTRIBUTE, String.class);
     }
 
     private static String getSheetName() {
-        return StateContext.getContext().getAttribute(SHEET_NAME_ATTRIBUTE, String.class);
+        return ContextAccessor.context().getAttribute(SHEET_NAME_ATTRIBUTE, String.class);
     }
 
     @Override
@@ -73,13 +66,13 @@ public class SaveDocumentHandler extends AbstractHandlerWithFactory {
                 Document link: %s
                 """.formatted(sheetName, documentLink);
         Effect effect;
-        boolean isCancelable = PrincipalContext.isInitiated();
+        boolean isCancelable = ContextAccessor.isPrincipalInitiated();
         if (isCancelable) {
             effect = SelectEffect.withCancelOption(message, ACKNOWLEDGMENT_OPTIONS);
         } else {
             effect = SelectEffect.of(message, ACKNOWLEDGMENT_OPTIONS);
         }
-        return new StateRecord(SAVE_GOOGLE_SHEET, effect, isCancelable);
+        return new State(SAVE_GOOGLE_SHEET, effect, isCancelable);
     }
 
     @Override

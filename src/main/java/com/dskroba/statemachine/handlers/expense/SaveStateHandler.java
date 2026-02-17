@@ -1,7 +1,6 @@
 package com.dskroba.statemachine.handlers.expense;
 
-import com.dskroba.actor.PrincipalContext;
-import com.dskroba.actor.StateContext;
+import com.dskroba.actor.Context;
 import com.dskroba.expenses.Expense;
 import com.dskroba.expenses.ExpenseRepository;
 import com.dskroba.statemachine.effects.Effect;
@@ -9,8 +8,8 @@ import com.dskroba.statemachine.effects.MessageEffect;
 import com.dskroba.statemachine.effects.SelectEffect;
 import com.dskroba.statemachine.events.Event;
 import com.dskroba.statemachine.handlers.AbstractHandlerWithFactory;
+import com.dskroba.statemachine.state.ContextAccessor;
 import com.dskroba.statemachine.state.State;
-import com.dskroba.statemachine.state.StateRecord;
 import com.dskroba.statemachine.state.descriptors.StateDescriptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -28,7 +27,7 @@ public class SaveStateHandler extends AbstractHandlerWithFactory {
 
     @Autowired
     public SaveStateHandler(ExpenseRepository repository) {
-        this(repository, StateRecord.cancelable(
+        this(repository, State.cancelable(
                 SAVE_EXPENSE,
                 SelectEffect.withCancelOption("Save or Discard?", List.of(SAVE_OPTION))));
     }
@@ -51,16 +50,16 @@ public class SaveStateHandler extends AbstractHandlerWithFactory {
     }
 
     private Optional<Effect> saveExpense() {
-        var context = StateContext.PROVIDER.get();
+        var context = Context.PROVIDER.get();
         var builder = context.getAttribute(EXPENSE_ATTRIBUTE_NAME, Expense.Builder.class);
-        builder.currency(PrincipalContext.currency());
-        var success = repository.insertExpense(builder.build(), PrincipalContext.PROVIDER.get().getPrincipal().context().activeTable());
+        builder.currency(ContextAccessor.principalCurrency());
+        var success = repository.insertExpense(builder.build(), ContextAccessor.principalStorage());
         if (!success) {
             return Optional.of(MessageEffect.of("""
                     There was an error inserting expense!
                     Please try again later.""").composite(switchToState(CHOOSE_TAG)));
         }
-        return Optional.of(switchToState(CHOOSE_TAG));
+        return Optional.of(switchToMenu());
     }
 
 

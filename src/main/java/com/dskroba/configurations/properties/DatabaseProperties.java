@@ -8,7 +8,9 @@ import org.springframework.validation.annotation.Validated;
 @Validated
 public record DatabaseProperties(
         @NotBlank
-        String name,
+        String principals,
+        @NotBlank
+        String principalStates,
         @NotBlank
         String path
 ) {

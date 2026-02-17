@@ -22,7 +22,8 @@ application:
     credentials-file: ${GOOGLE_CREDENTIALS_FILE:./data/secret/credentials.json}
     redirect-uri: ${GOOGLE_REDIRECT_URI:http://localhost:8080/auth/google/callback}
   database:
-    name: ${DATABASE_NAME}
+    principals: ${DATABASE_NAME_PRINCIPAL}
+    principal-states: ${DATABASE_NAME_PRINCIPAL_STATE}
     path: ${DATABASE_PATH}
 
 logging:

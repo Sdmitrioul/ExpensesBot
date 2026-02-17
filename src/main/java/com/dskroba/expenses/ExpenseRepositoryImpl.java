@@ -85,8 +85,8 @@ public class ExpenseRepositoryImpl implements ExpenseRepository {
                 return result;
             }
 
-            for (List<Object> row : response.getValues()) {
-                Date createdAt = Timestamp.valueOf(row.get(6).toString());
+            for (List<Object> row : response.getValues().stream().skip(1).toList()) {
+                Date createdAt = Timestamp.valueOf(row.get(5).toString());
 
                 if (createdAt.toInstant().isBefore(timeframe.from())
                         || createdAt.toInstant().isAfter(timeframe.to())) {
@@ -102,7 +102,7 @@ public class ExpenseRepositoryImpl implements ExpenseRepository {
                         .amount(Double.parseDouble(row.get(1).toString()))
                         .currency(row.get(2).toString())
                         .description(row.get(3).toString())
-                        .issuerId(Long.parseLong(row.get(4).toString()))
+                        .issuer(row.get(4).toString())
                         .date(createdAt)
                         .build());
             }

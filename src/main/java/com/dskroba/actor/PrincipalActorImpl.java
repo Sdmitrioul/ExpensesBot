@@ -1,13 +1,11 @@
 package com.dskroba.actor;
 
-import com.dskroba.principals.Principal;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.concurrent.*;
 
 import static com.dskroba.base.Utils.shutdownExecutorService;
-import static com.dskroba.statemachine.state.descriptors.CommandStatesDescriptors.MENU;
 
 public class PrincipalActorImpl implements PrincipalActor {
     private static final Logger log = LogManager.getLogger(PrincipalActorImpl.class);
@@ -16,16 +14,12 @@ public class PrincipalActorImpl implements PrincipalActor {
     private final Future<?> processingTask;
     private final BlockingQueue<Job> mailbox = new LinkedBlockingQueue<>();
     private volatile boolean running = true;
-    private final PrincipalContext principalContext;
-    private final StateContext stateContext = new StateContext(null);
 
-    public PrincipalActorImpl(Principal principal) {
+    public PrincipalActorImpl(Context context) {
         this.virtualExecutor = Executors.newVirtualThreadPerTaskExecutor();
-        this.principalContext = new PrincipalContext(principal);
         this.processingTask = virtualExecutor
                 .submit(() -> ScopedValue
-                        .where(PrincipalContext.PROVIDER, principalContext)
-                        .where(StateContext.PROVIDER, stateContext)
+                        .where(Context.PROVIDER, context)
                         .run(this::processMessages));
     }
 

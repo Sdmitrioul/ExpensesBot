@@ -8,14 +8,14 @@ public record Expense(ExpenseType expenseType,
                       double amount,
                       Currency currency,
                       String description,
-                      Long issuer,
+                      String issuer,
                       Date date) {
     public static class Builder {
         private ExpenseType type = ExpenseType.MISCELLANEOUS;
         private double amount;
         private Currency currency;
         private String description;
-        private Long issuerId;
+        private String issuerId;
         private Date date;
 
         public Builder() {
@@ -50,7 +50,7 @@ public record Expense(ExpenseType expenseType,
             return this;
         }
 
-        public Builder issuerId(Long id) {
+        public Builder issuer(String id) {
             this.issuerId = id;
             return this;
         }
@@ -85,7 +85,7 @@ public record Expense(ExpenseType expenseType,
             return description;
         }
 
-        public Long getIssuerId() {
+        public String getIssuerId() {
             return issuerId;
         }
 

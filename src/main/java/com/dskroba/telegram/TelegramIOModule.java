@@ -1,6 +1,5 @@
 package com.dskroba.telegram;
 
-import com.dskroba.actor.PrincipalContext;
 import com.dskroba.base.exception.CustomException;
 import com.dskroba.principals.Principal;
 import com.dskroba.statemachine.IOModule;
@@ -9,6 +8,7 @@ import com.dskroba.statemachine.events.CommandEvent;
 import com.dskroba.statemachine.events.Event;
 import com.dskroba.statemachine.events.FileUploadEvent;
 import com.dskroba.statemachine.events.MessageEvent;
+import com.dskroba.statemachine.state.ContextAccessor;
 import com.dskroba.type.ContentType;
 import com.dskroba.type.FileData;
 import com.dskroba.type.SelectOption;
@@ -148,6 +148,6 @@ public class TelegramIOModule implements IOModule<Update> {
     }
 
     private static Long chatId() {
-        return PrincipalContext.PROVIDER.get().getPrincipal().key().chatId();
+        return ContextAccessor.principalChatId();
     }
 }

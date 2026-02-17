@@ -3,7 +3,7 @@ package com.dskroba.statemachine;
 import com.dskroba.actor.ActorManager;
 import com.dskroba.actor.JobException;
 import com.dskroba.actor.PrincipalActor;
-import com.dskroba.actor.StateContext;
+import com.dskroba.actor.Context;
 import com.dskroba.principals.Principal;
 import com.dskroba.statemachine.effects.Effect;
 import com.dskroba.statemachine.events.Event;
@@ -34,7 +34,7 @@ public abstract class StateMachine<I> {
         actor.submit(() -> {
             try {
                 Event parsedEvent = ioModule.parse(input, authorizedIssuer);
-                StateContext stateContext = StateContext.PROVIDER.get();
+                Context stateContext = Context.PROVIDER.get();
                 EventHandler eventHandler = handlerRegistry.getHandler(stateContext.getState());
                 Effect effects = eventHandler.handleEvent(parsedEvent);
                 ioModule.handleEffect(effects);
