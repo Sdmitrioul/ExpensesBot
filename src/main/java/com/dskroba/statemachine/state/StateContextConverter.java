@@ -5,8 +5,13 @@ import com.dskroba.statemachine.effects.EffectTypeAdapter;
 import com.dskroba.statemachine.state.descriptors.*;
 import com.dskroba.storage.ValueConverter;
 import com.google.gson.*;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonToken;
+import com.google.gson.stream.JsonWriter;
 
+import java.io.IOException;
 import java.lang.reflect.Type;
+import java.time.Instant;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -17,6 +22,7 @@ public class StateContextConverter implements ValueConverter<StateContext> {
     private static final Gson GSON = new GsonBuilder()
             .registerTypeHierarchyAdapter(Effect.class, EFFECT_TYPE_ADAPTER)
             .registerTypeHierarchyAdapter(StateDescriptor.class, STATE_DESCRIPTOR_TYPE_ADAPTER)
+            .registerTypeAdapter(Instant.class, new InstantTypeAdapter())
             .create();
 
     @Override
@@ -69,6 +75,26 @@ public class StateContextConverter implements ValueConverter<StateContext> {
                 throw new JsonParseException("Unknown StateDescriptor type: " + type);
             }
             return RAW_GSON.fromJson(obj.get(DATA_FIELD).getAsString(), clazz);
+        }
+    }
+
+    private static class InstantTypeAdapter extends TypeAdapter<Instant> {
+        @Override
+        public void write(JsonWriter out, Instant value) throws IOException {
+            if (value == null) {
+                out.nullValue();
+            } else {
+                out.value(value.toString()); // ISO-8601: "2025-01-15T10:30:00Z"
+            }
+        }
+
+        @Override
+        public Instant read(JsonReader in) throws IOException {
+            if (in.peek() == JsonToken.NULL) {
+                in.nextNull();
+                return null;
+            }
+            return Instant.parse(in.nextString());
         }
     }
 }

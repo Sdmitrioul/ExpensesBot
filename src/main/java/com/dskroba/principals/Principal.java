@@ -11,7 +11,7 @@ public record Principal(
         TelegramId key,
         PrincipalData context
 ) {
-    public static final String NONEXISTING_TABLE = "-1L";
+    public static final GoogleTable NONEXISTING_TABLE = null;
 
     public Long id() {
         return key.telegramId();
@@ -54,8 +54,8 @@ public record Principal(
             return this;
         }
 
-        public Builder context(List<GoogleTable> tables, Currency activeCurrency, String activeTableId) {
-            this.context = new PrincipalData(tables, activeCurrency, activeTableId);
+        public Builder context(List<GoogleTable> tables, Currency activeCurrency, GoogleTable activeTable) {
+            this.context = new PrincipalData(tables, activeCurrency, activeTable);
             return this;
         }
 
@@ -63,7 +63,7 @@ public record Principal(
             this.context = new PrincipalData(
                     tables,
                     context != null ? context.activeCurrency() : null,
-                    context != null ? context.activeTableId() : null
+                    context != null ? context.activeTable() : null
             );
             return this;
         }
@@ -74,7 +74,7 @@ public record Principal(
             this.context = new PrincipalData(
                     tables,
                     context != null ? context.activeCurrency() : null,
-                    context != null ? context.activeTableId() : null
+                    context != null ? context.activeTable() : null
             );
             return this;
         }
@@ -83,16 +83,16 @@ public record Principal(
             this.context = new PrincipalData(
                     context != null ? context.tables() : null,
                     currency,
-                    context != null ? context.activeTableId() : null
+                    context != null ? context.activeTable() : null
             );
             return this;
         }
 
-        public Builder activeTableId(String tableId) {
+        public Builder activeTableId(GoogleTable table) {
             this.context = new PrincipalData(
                     context != null ? context.tables() : null,
                     context != null ? context.activeCurrency() : null,
-                    tableId
+                    table
             );
             return this;
         }

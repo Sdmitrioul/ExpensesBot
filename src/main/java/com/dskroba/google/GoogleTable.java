@@ -2,6 +2,7 @@ package com.dskroba.google;
 
 import com.dskroba.base.exception.CustomException;
 
+import java.util.List;
 import java.util.Optional;
 
 public record GoogleTable(
@@ -10,6 +11,10 @@ public record GoogleTable(
 ) {
     public String range() {
         return sheetName + "!A:F";
+    }
+
+    public static List<Object> header() {
+        return List.of("Tag", "Price", "Currency", "Description", "Created by", "Time");
     }
 
     public static GoogleTable fromLink(String link, String sheetName) {

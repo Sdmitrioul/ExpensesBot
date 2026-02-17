@@ -2,7 +2,7 @@ package com.dskroba.statemachine.handlers.google;
 
 import com.dskroba.google.GoogleTable;
 import com.dskroba.principals.Principal;
-import com.dskroba.statemachine.effects.CompositeEffect;
+import com.dskroba.services.GoogleSheetFacade;
 import com.dskroba.statemachine.effects.Effect;
 import com.dskroba.statemachine.effects.MessageEffect;
 import com.dskroba.statemachine.effects.SelectEffect;
@@ -12,6 +12,7 @@ import com.dskroba.statemachine.state.ContextAccessor;
 import com.dskroba.statemachine.state.State;
 import com.dskroba.statemachine.state.descriptors.StateDescriptor;
 import com.dskroba.type.SelectOption;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -23,6 +24,13 @@ import static com.dskroba.statemachine.state.descriptors.GoogleStatesDescriptors
 public class SaveDocumentHandler extends AbstractHandlerWithFactory {
     private static final String CHANGE_SHEET_NAME = "Change sheet name";
     private static final List<SelectOption> ACKNOWLEDGMENT_OPTIONS = List.of(SelectOption.SAVE_OPTION, SelectOption.base(CHANGE_SHEET_NAME));
+
+    private final GoogleSheetFacade facade;
+
+    @Autowired
+    public SaveDocumentHandler(GoogleSheetFacade facade) {
+        this.facade = facade;
+    }
 
     @Override
     protected Optional<Effect> handleStateEvents(Event event) {
@@ -40,10 +48,16 @@ public class SaveDocumentHandler extends AbstractHandlerWithFactory {
         return null;
     }
 
-    private CompositeEffect saveGoogleDocument() {
+    private Effect saveGoogleDocument() {
+        if (!facade.ensureSheetWithHeader(getDocumentLink(), getSheetName(), GoogleTable.header())) {
+            return new MessageEffect("This sheet either is unsupported or have wrong configuration header.");
+        }
         GoogleTable table = GoogleTable.fromLink(getDocumentLink(), getSheetName());
         Principal principal = ContextAccessor.principal();
-        Principal updatedPrincipal = Principal.builder(principal).table(table).activeTableId(table.documentId()).build();
+        Principal updatedPrincipal = Principal.builder(principal)
+                .table(table)
+                .activeTableId(table)
+                .build();
         ContextAccessor.context().setPrincipal(updatedPrincipal);
         return MessageEffect.of("Document saved as current storage!").composite(switchToMenu());
     }

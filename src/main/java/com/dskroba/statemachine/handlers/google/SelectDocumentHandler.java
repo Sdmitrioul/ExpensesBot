@@ -40,7 +40,7 @@ public class SelectDocumentHandler extends AbstractHandlerWithFactory {
             if (doc.sheetName().equals(document)) {
                 var principal = ContextAccessor.principal()
                         .toBuilder()
-                        .activeTableId(doc.documentId())
+                        .activeTableId(doc)
                         .build();
                 ContextAccessor.context().setPrincipal(principal);
                 return switchToMenu();
