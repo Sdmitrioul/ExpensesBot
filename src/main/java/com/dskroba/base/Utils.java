@@ -105,10 +105,10 @@ public final class Utils {
         return result;
     }
 
-    private Utils() {
-    }
-
     public static String dateTimePrinter(LocalDateTime time) {
         return DATE_TIME_FORMATTER.format(time);
+    }
+
+    private Utils() {
     }
 }
