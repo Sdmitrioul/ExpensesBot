@@ -99,7 +99,7 @@ public class ExpenseRepositoryImpl implements ExpenseRepository {
 
                 result.add(new Expense.Builder()
                         .type(row.get(0).toString())
-                        .amount(Double.parseDouble(row.get(1).toString()))
+                        .amount(Double.parseDouble(row.get(1).toString().replace(",", ".")))
                         .currency(row.get(2).toString())
                         .description(row.get(3).toString())
                         .issuer(row.get(4).toString())

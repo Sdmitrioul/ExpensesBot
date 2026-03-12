@@ -72,9 +72,45 @@ public class GoogleSheetsService {
 
     public Sheets getSheets() {
         if (sheetsInstance == null) {
-            throw new InitializationException("Google Sheets not authorized. Please complete OAuth flow first.");
+            throw new InitializationException(
+                    "Google Sheets not authorized. Please complete OAuth flow first.");
         }
+        ensureCredentialFresh();
         return sheetsInstance;
+    }
+
+    private void ensureCredentialFresh() {
+        try {
+            Credential credential = flow.loadCredential(USER_ID);
+            if (credential == null) {
+                this.sheetsInstance = null;
+                throw new InitializationException(
+                        "Stored credentials lost. Please re-authorize.");
+            }
+            // If access token is expired or about to expire, force refresh
+            if (credential.getExpiresInSeconds() != null
+                    && credential.getExpiresInSeconds() <= 60) {
+                if (credential.getRefreshToken() != null) {
+                    boolean refreshed = credential.refreshToken();
+                    if (!refreshed) {
+                        this.sheetsInstance = null;
+                        throw new InitializationException(
+                                "Token refresh failed. Please re-authorize.");
+                    }
+                    this.sheetsInstance = buildSheetsService(credential);
+                    log.info("Access token refreshed successfully");
+                } else {
+                    this.sheetsInstance = null;
+                    throw new InitializationException(
+                            "Access token expired and no refresh token available.");
+                }
+            }
+        } catch (IOException e) {
+            log.error("Could not load stored credentials", e);
+            this.sheetsInstance = null;
+            throw new InitializationException(
+                    "Failed to check/refresh credentials", e);
+        }
     }
 
     public void completeAuthorization(String code, String redirectUri) throws IOException {
