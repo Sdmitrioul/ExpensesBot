@@ -83,7 +83,7 @@ public class RateLimiterImplTests {
         RateLimiterImpl rateLimiterNoRetries = new RateLimiterImpl(fixedClock, Duration.ofSeconds(2), 5, 1);
 
         for (int i = 0; i < 5; i++) {
-            assertDoesNotThrow(() -> rateLimiterNoRetries.acquire(), "acquire should not throw within limit");
+            assertDoesNotThrow(rateLimiterNoRetries::acquire, "acquire should not throw within limit");
         }
 
         assertThrows(RateLimiterException.class, rateLimiterNoRetries::acquire, "acquire should fail without retries");

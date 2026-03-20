@@ -45,3 +45,4 @@ bin/
 /requests/notion/http-client.private.env.json
 /logs/**
 ./logs/
+/data/**

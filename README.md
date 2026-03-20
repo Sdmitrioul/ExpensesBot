@@ -1,40 +1,40 @@
 # ExpensesBot
 
-ExpenseBot is a Telegram bot that integrates with the Notion API to track and manage your expenses. It allows users to:
+ExpensesBot is a Telegram bot that uses Google Sheets as storage to track and manage your expenses. It allows users to:
 
 - View their expenses for the week or day.
 - Group expenses by tag for a current month.
-- Add new expenses to the system directly via Telegram.
+- Add new expenses directly via Telegram.
 
-This bot leverages the Notion API to fetch and manage data, and integrates with Telegram to provide a user-friendly interface for interacting with the system.
+The bot automatically sets up the required spreadsheet structure on first launch — no manual configuration needed.
 
 ## How to run
-1. Create Notion integration. [Here is instruction](https://developers.notion.com/docs/create-a-notion-integration)
-2. Connect it to your database in Notion. [About database structure](#database-structure)
-3. Obtain database id. (You can find it in URL of page that contains database: `https://www.notion.so/<DATABASE_ID>?v=<...>)
-4. Get telegram bot token. [Instruction](https://core.telegram.org/bots/features#botfather)
-5. Create properties file. [Example](./devops/properties/expenses-bot.example.properties)
-6. Have installed docker. [Instruction](https://docs.docker.com/engine/install/ubuntu/)
-7. Run `docker run -v <YOUR_PROPERTY_FILE>:/config/expenses-bot.properties --name expenses-bot -d  sdmitrioul/expenses-bot:1.1`
 
-## Database structure
+1. Create a Google Cloud service account with Sheets API enabled. [Instruction](https://developers.google.com/sheets/api/quickstart/java)
+2. Get a Telegram bot token. [Instruction](https://core.telegram.org/bots/features#botfather)
+3. Create a properties file. [Example](./devops/properties/expenses-bot.example.properties)
+4. Have Docker installed. [Instruction](https://docs.docker.com/engine/install/ubuntu/)
+5. Run:
+   ```bash
+   docker run -v <YOUR_PROPERTY_FILE>:/config/expenses-bot.properties \
+              --name expenses-bot -d sdmitrioul/expenses-bot:1.
+   ```
 
-Fields of database are presented on image.
-![img.png](documentation/database_header.png)
+The bot will create and configure the Google Sheet automatically on startup.
 
-Fields description:
-1. Tags - multi-select value, one of: *GROCERIES*, *TRANSPORT*, *DOG*, *HOME*, *CAFE*, *BILLS*, *CLOTHES*, *SPORT*, *HEALTH*.
-2. Month - select: one of 12 months.
-3. Amount - number value, currency could be added optionally.
-4. Notes - title.
-5. Date - date type.
-6. Time - formula: `if(empty(prop("Date")), prop("Created Time"), prop("Date"))`.
+## Spreadsheet structure
+
+The spreadsheet is provisioned automatically. Each expense row contains the following columns:
+
+1. **Tags** — category of the expense: *GROCERIES*, *TRANSPORT*, *DOG*, *HOME*, *CAFE*, *BILLS*, *CLOTHES*, *SPORT*, *HEALTH*.
+2. **Month** — one of 12 months.
+3. **Amount** — numeric value of the expense.
+4. **Notes** — short description.
+5. **Date** — date of the expense.
 
 ## Future plans
 
-- Graphics of expenses
 - Flexible *Tags* column
-- Database creator
 
 ## Contribution
 

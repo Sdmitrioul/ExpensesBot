@@ -36,14 +36,12 @@ public final class Configuration {
         LOGGER.info("Read properties from files (-D" + DEFAULT_CONFIG_FILE_PROP + "={}).", path);
         Properties propertiesFromPaths = getPropertiesFromPaths(path);
 
-        // FIXED: Add properties to system properties instead of replacing them
         addPropertiesToSystem(propertiesFromPaths);
 
         return propertiesFromPaths;
     }
 
     private static void addPropertiesToSystem(Properties properties) {
-        // Add each property individually without removing existing system properties
         for (String key : properties.stringPropertyNames()) {
             String value = properties.getProperty(key);
             System.setProperty(key, value);

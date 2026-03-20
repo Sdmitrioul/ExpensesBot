@@ -10,13 +10,10 @@ import org.springframework.validation.annotation.Validated;
 @Validated
 public record TelegramBotProperties(
         boolean enabled,
-
         @NotBlank
         String token,
-
         @NotBlank
         String allowedUsers,
-
         @Min(1) @Max(10)
         int threadsCount
 ) {
